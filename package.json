@@ -1,0 +1,19 @@
+{
+  "name": "georender-pack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-denormalized": "node ./example/generate-denormalized-records.js ./example/kharkiv_ukraine.osm.pbf"
+  },
+  "author": "mk30",
+  "license": "MIT",
+  "dependencies": {
+    "osm-pbf-parser": "^2.3.0",
+    "through2": "^3.0.1"
+  }
+}
