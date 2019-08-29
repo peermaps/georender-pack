@@ -4,6 +4,7 @@
 var fs = require('fs')
 var through = require('through2')
 var parseOSM = require('osm-pbf-parser')
+var georenderPack = require('../index.js')
  
 var osm = parseOSM()
 var denormalizedItems = {}
@@ -33,3 +34,9 @@ function write (items, enc, next) {
 function end (next) {
   console.log(denormalizedItems)
 }
+
+/*
+  items.forEach(function (item) {
+   if (item.type === 'way') {console.log(georenderPack(item))}
+  })
+*/

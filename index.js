@@ -3,6 +3,8 @@
 output is buffer for 1 record
 */
 
-module.exports = function (denormalizedRecord) {
+var buf = Buffer.alloc(10, 1)
 
+module.exports = function (denormalizedRecord) {
+  return denormalizedRecord
 }
