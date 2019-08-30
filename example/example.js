@@ -8,8 +8,6 @@ var georenderPack = require('../index.js')
  
 var osm = parseOSM()
 var denormalizedItems = {}
-var references = {}
-var itemRefArray
 
 fs.createReadStream(process.argv[2])
   .pipe(osm)
@@ -18,25 +16,19 @@ fs.createReadStream(process.argv[2])
 function write (items, enc, next) {
   items.forEach(function (item) {
     if (item.type === 'node') {
-      references[item.id] = [item.lat, item.lon]
-    }
-    if (item.type === 'way') {
       denormalizedItems[item.id] = item
-      itemRefArray = item.refs.map(function(ref){
-        return references[ref]  
+    }
+    else if (item.type === 'way') {
+      denormalizedItems[item.id] = item
+      denormalizedItems[item.id].refs = item.refs.map(function(ref){
+        return [denormalizedItems[ref].lon, denormalizedItems[ref].lat]  
       })
-      denormalizedItems[item.id].refs = itemRefArray
     }
   })
   next()
 }
-
 function end (next) {
-  console.log(denormalizedItems)
-}
-
-/*
-  items.forEach(function (item) {
-   if (item.type === 'way') {console.log(georenderPack(item))}
+  Object.values(denormalizedItems).forEach(function(entry){
+    if (entry.type === 'node') console.log(entry, georenderPack(entry))
   })
-*/
+}
