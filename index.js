@@ -5,7 +5,7 @@ output is buffer for 1 record
 var features = require('./features.json')
 
 module.exports = function (denormalizedRecord) {
-  var buf = Buffer.alloc(20)
+  var buf = Buffer.alloc(25)
   var type
   if (Object.keys(denormalizedRecord.tags).length !== 0){
     var tags = Object.entries(denormalizedRecord.tags)
@@ -21,6 +21,8 @@ module.exports = function (denormalizedRecord) {
     buf.writeUInt8(0x01, 0) 
     buf.writeUInt32LE(type, 1) //type
     buf.writeDoubleLE(denormalizedRecord.id, 5)
+    buf.writeFloatLE(denormalizedRecord.lon, 13)
+    buf.writeFloatLE(denormalizedRecord.lat, 17)
   }
   return buf
 }
