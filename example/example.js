@@ -33,6 +33,7 @@ function end (next) {
   //object.keys..do georenderPack on each one of those. 
   //georenderPack(entry, refsObject)
   Object.values(allItems).forEach(function (item) {
-    console.log(georenderPack(item, itemsRefsObject))
+    //console.log(georenderPack(item, itemsRefsObject))
+    georenderPack(item, itemsRefsObject)
   })
 }

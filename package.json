@@ -13,6 +13,7 @@
   "author": "mk30",
   "license": "MIT",
   "dependencies": {
+    "earcut": "^2.2.1",
     "osm-pbf-parser": "^2.3.0",
     "through2": "^3.0.1"
   }
