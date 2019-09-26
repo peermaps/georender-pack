@@ -66,16 +66,16 @@ function end (next) {
     point: {
       type: new Float32Array(sizes.point.type),
       id: new Float32Array(sizes.point.id),
-      position: new Float32Array(sizes.point.position) 
+      position: new Float64Array(sizes.point.position) 
     },
     line: {
       type: new Float32Array(sizes.line.type),
-      id: new Float32Array(sizes.line.id),
+      id: new Float64Array(sizes.line.id),
       position: new Float32Array(sizes.line.position) 
     },
     area: {
       type: new Float32Array(sizes.area.type),
-      id: new Float32Array(sizes.area.id),
+      id: new Float64Array(sizes.area.id),
       position: new Float32Array(sizes.area.position),
       cell: new Uint32Array(sizes.area.cell)
     }
