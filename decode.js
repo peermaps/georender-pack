@@ -104,6 +104,3 @@ module.exports = function (buffers) {
   })
   return data
 }
-
-//when modularize this, an array of buffers should be the argument, output is
-//object with typed arrays.

@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "generate-denormalized": "node ./example/generate-denormalized-records.js ./example/kharkiv_ukraine.osm.pbf"
+    "get-data": "wget https://kitties.neocities.org/tmp/alexandria.pbf -O ./example/alexandria.pbf",
+    "encode-example": "node ./example/encode-example.js ./example/alexandria.pbf",
+    "decode-example": "node ./example/decode-example.js ./example/alexandria.pbf"
   },
   "author": "mk30",
   "license": "MIT",

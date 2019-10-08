@@ -5,7 +5,6 @@ var fs = require('fs')
 var through = require('through2')
 var parseOSM = require('osm-pbf-parser')
 var georenderPack = require('../index.js')
-var decode = require('../decode.js')
  
 var osm = parseOSM()
 var allItems = {}
@@ -30,11 +29,8 @@ function write (items, enc, next) {
   })
   next()
 }
-
 function end (next) {
-  var buffers = []
   Object.values(allItems).forEach(function (item) {
-    buffers.push(georenderPack(item, itemsRefsObject))
+    console.log(georenderPack(item, itemsRefsObject))
   })
-  console.log(decode(buffers))
 }

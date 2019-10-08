@@ -1,7 +1,3 @@
-/*
-1 denormalized record is input
-output is buffer for 1 record
-*/
 var earcut = require('earcut')
 var features = require('./features.json')
 var isArea = require('../osm-is-area/main.js')

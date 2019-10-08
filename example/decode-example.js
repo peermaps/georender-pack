@@ -1,10 +1,8 @@
-//input osm data put it in a through stream, like the pbf parser.
-//denormalize data
-//pipe it out.
 var fs = require('fs')
 var through = require('through2')
 var parseOSM = require('osm-pbf-parser')
 var georenderPack = require('../index.js')
+var decode = require('../decode.js')
  
 var osm = parseOSM()
 var allItems = {}
@@ -29,11 +27,11 @@ function write (items, enc, next) {
   })
   next()
 }
+
 function end (next) {
-  //object.keys..do georenderPack on each one of those. 
-  //georenderPack(entry, refsObject)
+  var buffers = []
   Object.values(allItems).forEach(function (item) {
-    console.log(georenderPack(item, itemsRefsObject))
-    //georenderPack(item, itemsRefsObject)
+    buffers.push(georenderPack(item, itemsRefsObject))
   })
+  console.log(decode(buffers))
 }
