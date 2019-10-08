@@ -59,10 +59,10 @@ in your terminal, run `npm install` after you've cloned the repo.
 
 # example
 
+## get data
+
 first, open the terminal and navigate to the directory where you've cloned your
-repo. go to the
-`example` directory. once there, run `tar -xzvf geodata.tar.gz`. after that, the
-`example` directory should have a file called `alexandria.pbf`.
+repo. run `npm run get-data`. if that worked correctly, the `example` directory should have a file called `alexandria.pbf`.
 
 ## encode example
 
