@@ -9,13 +9,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "get-data": "wget https://kitties.neocities.org/tmp/alexandria.pbf -O ./example/alexandria.pbf",
-    "encode-example": "node ./example/encode-example.js ./example/alexandria.pbf",
-    "decode-example": "node ./example/decode-example.js ./example/alexandria.pbf"
+    "encode-example": "node ./example/encode.js ./example/alexandria.pbf",
+    "decode-example": "node ./example/decode.js"
   },
   "author": "mk30",
   "license": "MIT",
   "dependencies": {
     "earcut": "^2.2.1",
+    "osm-is-area": "^1.0.0"
+  },
+  "devDependencies": {
     "osm-pbf-parser": "^2.3.0",
     "through2": "^3.0.1"
   }
