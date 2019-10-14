@@ -87,6 +87,16 @@ this:
 
 # api
 
+you can load both the encode and decode methods:
+
+`var geo = require('georender-pack')`
+
+or you can load just the method that you need:
+
+`var encode = require('georender-pack/encode')`
+
+`var decode = reuire('georender-pack/decode')`
+
 ## encode(item[, itemDependencies])
 
 input is a single osm entry for a node or way (this package currently doesn't handle relations)
