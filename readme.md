@@ -1,6 +1,6 @@
 pack osm data into a buffer based on the [peermaps buffer
 schema](https://github.com/peermaps/docs/blob/master/bufferschema.md). also includes
-code to unpack buffers in the above schema for use elsewhere.
+code to unpack buffers in the above schema.
 
 this is part of the [peermaps](https://github.com/peermaps/) pipeline.
 
@@ -12,7 +12,7 @@ this is part of the [peermaps](https://github.com/peermaps/) pipeline.
 var fs = require('fs')
 var through = require('through2')
 var parseOSM = require('osm-pbf-parser')
-var georenderPack = require('../encode.js')
+var encode = require('georender-pack/encode')
  
 var osm = parseOSM()
 var allItems = {}
@@ -39,7 +39,7 @@ function write (items, enc, next) {
 }
 function end (next) {
   Object.values(allItems).forEach(function (item) {
-    console.log(georenderPack(item, itemsRefsObject))
+    console.log(encode(item, itemsRefsObject))
   })
 }
 ```
@@ -55,7 +55,7 @@ repo. run `npm run get-data`. if that worked correctly, the `example` directory 
 ## decode
 
 ```
-var decode = require('../decode.js')
+var decode = require('georender-pack/decode')
 
 var buffers = [
   Buffer.from('0115010000000000084c4080410daeef416391f941', 'hex'),
@@ -87,7 +87,7 @@ this:
 
 # api
 
-## var encode = require('georender-pack/encode')
+## encode(item[, itemDependencies])
 
 input is a single osm entry for a node or way (this package currently doesn't handle relations)
 processed through
@@ -99,7 +99,7 @@ for all the points that make up the way).
 output is a single buffer based on the [peermaps buffer
 schema](https://github.com/peermaps/docs/blob/master/bufferschema.md).
 
-## var decode = require('georender-pack/decode')
+## decode(buffers)
 
 input is an array of buffers based on the [peermaps buffer
 schema](https://github.com/peermaps/docs/blob/master/bufferschema.md).
