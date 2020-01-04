@@ -11,6 +11,4 @@ var buffers = [
   'hex') //way
 ]
 
-buffers.forEach(function (buffer) {
-  console.log(decode(buffers))
-})
+console.log(decode(buffers))
