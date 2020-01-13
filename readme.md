@@ -95,7 +95,7 @@ or you can load just the method that you need:
 
 `var encode = require('georender-pack/encode')`
 
-`var decode = reuire('georender-pack/decode')`
+`var decode = require('georender-pack/decode')`
 
 ## encode(item[, itemDependencies])
 
@@ -121,16 +121,16 @@ output is an object containing buffer data in this structure:
   point: {
     type: Float32Array [],
     id: Float32Array [],
-    position: Float64Array []
+    position: Float32Array []
   },
   line: {
     type: Float32Array [],
-    id: Float64Array [],
+    id: Float32Array [],
     position: Float32Array []
   },
   area: {
     type: Float32Array [],
-    id: Float64Array [],
+    id: Float32Array [],
     position: Float32Array [],
     cell: Uint32Array []
   }

@@ -1,68 +1,71 @@
+var getNormals = require('polyline-normals')
 module.exports = function (buffers) {
   var sizes = {
-    point: { type: 0, id: 0, position: 0 },
-    line: { type: 0, id: 0, position: 0 },
-    area: { type: 0, id: 0, position: 0, cell: 0 }
+    point: { types: 0, ids: 0, positions: 0 },
+    line: { types: 0, ids: 0, positions: 0, normals: 0 },
+    area: { types: 0, ids: 0, positions: 0, cells: 0 }
   }
   buffers.forEach(function (buf) {
     var featureType = buf.readUInt8(0)
     if (featureType === 1) {
-      sizes.point.type++
-      sizes.point.id+=2
-      sizes.point.position+=2
+      sizes.point.types++
+      sizes.point.ids+=2
+      sizes.point.positions+=2
     }
     else if (featureType === 2) {
       var plen = buf.readUInt16LE(13)
-      sizes.line.type+=plen
-      sizes.line.id+=plen*2
-      sizes.line.position+=plen*2
+      sizes.line.types+=plen*2+2
+      sizes.line.ids+=plen*4+4
+      sizes.line.positions+=plen*4+4
+      sizes.line.normals+=plen*4+4
     }
     else if (featureType === 3) {
       var plen = buf.readUInt16LE(13)
-      sizes.area.type+=plen
-      sizes.area.id+=plen*2
-      sizes.area.position+=plen*2
+      sizes.area.types+=plen
+      sizes.area.ids+=plen*2
+      sizes.area.positions+=plen*2
       var clen = buf.readUInt16LE(15+8*plen)
-      sizes.area.cell+=clen*3
+      sizes.area.cells+=clen*3
     }
   })
   var data = {
     point: {
-      type: new Float32Array(sizes.point.type),
-      id: new Float32Array(sizes.point.id),
-      position: new Float32Array(sizes.point.position)
+      types: new Float32Array(sizes.point.types),
+      ids: new Float32Array(sizes.point.ids),
+      positions: new Float32Array(sizes.point.positions)
     },
     line: {
-      type: new Float32Array(sizes.line.type),
-      id: new Float32Array(sizes.line.id),
-      position: new Float32Array(sizes.line.position) 
+      types: new Float32Array(sizes.line.types),
+      ids: new Float32Array(sizes.line.ids),
+      positions: new Float32Array(sizes.line.positions),
+      normals: new Float32Array(sizes.line.normals)
     },
     area: {
-      type: new Float32Array(sizes.area.type),
-      id: new Float32Array(sizes.area.id),
-      position: new Float32Array(sizes.area.position),
-      cell: new Uint32Array(sizes.area.cell)
+      types: new Float32Array(sizes.area.types),
+      ids: new Float32Array(sizes.area.ids),
+      positions: new Float32Array(sizes.area.positions),
+      cells: new Uint32Array(sizes.area.cells)
     }
   }
   var offsets = {
-    point: { type: 0, id: 0, position: 0 },
-    line: { type: 0, id: 0, position: 0 },
-    area: { type: 0, id: 0, position: 0, cell: 0 }
+    point: { types: 0, ids: 0, positions: 0 },
+    line: { types: 0, ids: 0, positions: 0, normals: 0 },
+    area: { types: 0, ids: 0, positions: 0, cells: 0 }
   }
   buffers.forEach(function (buf) {
     var offset = 0
     var featureType = buf.readUInt8(offset)
     offset+=1
     if (featureType === 1) {
-      data.point.type[offsets.point.type++] = buf.readUInt32LE(offset)
+      data.point.types[offsets.point.types++] = buf.readUInt32LE(offset)
       offset+=4
-      data.point.id[offsets.point.id++] = buf.readUInt32LE(offset)
+      data.point.ids[offsets.point.ids++] = buf.readUInt32LE(offset)
       offset+=4
-      data.point.id[offsets.point.id++] = buf.readUInt32LE(offset)
+      data.point.ids[offsets.point.ids++] = buf.readUInt32LE(offset)
       offset+=4
-      data.point.position[offsets.point.position++] = buf.readFloatLE(offset)
+      data.point.positions[offsets.point.positions++] = buf.readFloatLE(offset)
       offset+=4
-      data.point.position[offsets.point.position++] = buf.readFloatLE(offset)
+      data.point.positions[offsets.point.positions++] = buf.readFloatLE(offset)
       offset+=4
     }
     else if (featureType === 2) {
@@ -74,15 +77,53 @@ module.exports = function (buffers) {
       offset+=4
       var plen = buf.readUInt16LE(offset)
       offset+=2
+      var positions = []
+      var lon, lat
+      data.line.types[offsets.line.types++] = type
+      data.line.ids[offsets.line.ids++] = id0
+      data.line.ids[offsets.line.ids++] = id1
       for (var i=0; i<plen; i++) {
-        data.line.type[offsets.line.type++] = type
-        data.line.id[offsets.line.id++] = id0
-        data.line.id[offsets.line.id++] = id1
-        data.line.position[offsets.line.position++] = buf.readFloatLE(offset)
+        data.line.types[offsets.line.types++] = type
+        data.line.types[offsets.line.types++] = type
+        data.line.ids[offsets.line.ids++] = id0
+        data.line.ids[offsets.line.ids++] = id1
+        data.line.ids[offsets.line.ids++] = id0
+        data.line.ids[offsets.line.ids++] = id1
+        lon = buf.readFloatLE(offset)
         offset+=4
-        data.line.position[offsets.line.position++] = buf.readFloatLE(offset)
+        lat = buf.readFloatLE(offset)
         offset+=4
+        if (i === 0) {
+          data.line.positions[offsets.line.positions++] = lon
+          data.line.positions[offsets.line.positions++] = lat
+        }
+        data.line.positions[offsets.line.positions++] = lon
+        data.line.positions[offsets.line.positions++] = lat
+        data.line.positions[offsets.line.positions++] = lon
+        data.line.positions[offsets.line.positions++] = lat
+        positions.push([lon, lat])
       }
+      data.line.types[offsets.line.types++] = type
+      data.line.ids[offsets.line.ids++] = id0
+      data.line.ids[offsets.line.ids++] = id1
+      data.line.positions[offsets.line.positions++] = lon
+      data.line.positions[offsets.line.positions++] = lat
+
+      var normals = getNormals(positions)
+      //console.log(positions)
+      var scale = Math.sqrt(normals[0][1])
+      data.line.normals[offsets.line.normals++] = normals[0][0][0]*scale
+      data.line.normals[offsets.line.normals++] = normals[0][0][1]*scale
+      for (var i=0; i<normals.length; i++) {
+        scale = Math.sqrt(normals[i][1])
+        data.line.normals[offsets.line.normals++] = normals[i][0][0]*scale
+        data.line.normals[offsets.line.normals++] = normals[i][0][1]*scale
+        data.line.normals[offsets.line.normals++] = -1*normals[i][0][0]*scale
+        data.line.normals[offsets.line.normals++] = -1*normals[i][0][1]*scale
+      }
+      var normOffset = offsets.line.normals
+      data.line.normals[offsets.line.normals++] = data.line.normals[normOffset-2]
+      data.line.normals[offsets.line.normals++] = data.line.normals[normOffset-1]
     }
     else if (featureType === 3) {
       var type = buf.readUInt32LE(offset)
@@ -94,22 +135,22 @@ module.exports = function (buffers) {
       var plen = buf.readUInt16LE(offset)
       offset+=2
       for (var i=0; i<plen; i++) {
-        data.area.type[offsets.area.type++] = type
-        data.area.id[offsets.area.id++] = id0
-        data.area.id[offsets.area.id++] = id1
-        data.area.position[offsets.area.position++] = buf.readFloatLE(offset)
+        data.area.types[offsets.area.types++] = type
+        data.area.ids[offsets.area.ids++] = id0
+        data.area.ids[offsets.area.ids++] = id1
+        data.area.positions[offsets.area.positions++] = buf.readFloatLE(offset)
         offset+=4
-        data.area.position[offsets.area.position++] = buf.readFloatLE(offset)
+        data.area.positions[offsets.area.positions++] = buf.readFloatLE(offset)
         offset+=4
       }
       var clen = buf.readUInt16LE(offset)
       offset+=2
       for (var i=0; i<clen; i++) {
-        data.area.cell[offsets.area.cell++] = buf.readUInt16LE(offset)
+        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset)
         offset+=2
-        data.area.cell[offsets.area.cell++] = buf.readUInt16LE(offset)
+        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset)
         offset+=2
-        data.area.cell[offsets.area.cell++] = buf.readUInt16LE(offset)
+        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset)
         offset+=2
       }
     }

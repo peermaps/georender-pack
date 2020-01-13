@@ -49,7 +49,7 @@ module.exports = function (item, deps) {
         offset+=2
       })
     }
-    else {
+    else if (item.refs.length > 1) {
       var buf = Buffer.alloc(15 + item.refs.length*8)
       buf.writeUInt8(0x02, 0)
       buf.writeUInt32LE(type, 1) //type
@@ -61,6 +61,9 @@ module.exports = function (item, deps) {
         buf.writeFloatLE(deps[ref].lat, offset+4)
         offset+=8
       })
+    }
+    else {
+      var buf = Buffer.alloc(0)
     }
   }
   return buf
