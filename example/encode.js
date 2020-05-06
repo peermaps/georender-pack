@@ -28,6 +28,7 @@ function write (items, enc, next) {
 }
 function end (next) {
   Object.values(allItems).forEach(function (item) {
+    //console.log(item)
     console.log(georenderPack(item, itemsRefsObject))
   })
 }

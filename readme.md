@@ -139,7 +139,7 @@ output is an object containing buffer data in this structure:
 
 the output data does not come out as one array for each point/line/area, but in arrays that
 include all the point/line/area data. points that make up each point/line/area are accessible
-by offest into these arrays.
+by offset into these arrays.
 
 # installation
 
