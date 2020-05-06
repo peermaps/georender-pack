@@ -1,4 +1,5 @@
 var getNormals = require('polyline-normals')
+var varint = require('varint')
 module.exports = function (buffers) {
   var sizes = {
     point: { types: 0, ids: 0, positions: 0 },
@@ -7,24 +8,37 @@ module.exports = function (buffers) {
   }
   buffers.forEach(function (buf) {
     var featureType = buf.readUInt8(0)
+    var offset = 1
     if (featureType === 1) {
       sizes.point.types++
       sizes.point.ids+=2
       sizes.point.positions+=2
     }
     else if (featureType === 2) {
-      var plen = buf.readUInt16LE(13)
+      varint.decode(buf, offset) //types
+      offset+=varint.decode.bytes
+      varint.decode(buf, offset) //id
+      offset+=varint.decode.bytes
+      var plen = varint.decode(buf, offset) //pcount
+      offset+=varint.decode.bytes
       sizes.line.types+=plen*2+2
       sizes.line.ids+=plen*4+4
       sizes.line.positions+=plen*4+4
       sizes.line.normals+=plen*4+4
     }
     else if (featureType === 3) {
-      var plen = buf.readUInt16LE(13)
+      varint.decode(buf, offset) //types
+      offset+=varint.decode.bytes
+      varint.decode(buf, offset) //id
+      offset+=varint.decode.bytes
+      var plen = varint.decode(buf, offset) //pcount
+      offset+=varint.decode.bytes
+      offset+=plen*8
       sizes.area.types+=plen
       sizes.area.ids+=plen*2
       sizes.area.positions+=plen*2
-      var clen = buf.readUInt16LE(15+8*plen)
+      var clen = varint.decode(buf, offset) //clen
+      offset+=varint.decode.bytes
       sizes.area.cells+=clen*3
     }
   })
@@ -52,6 +66,7 @@ module.exports = function (buffers) {
     line: { types: 0, ids: 0, positions: 0, normals: 0 },
     area: { types: 0, ids: 0, positions: 0, cells: 0 }
   }
+  var pindex = 0
   buffers.forEach(function (buf) {
     var offset = 0
     var featureType = buf.readUInt8(offset)
@@ -146,13 +161,14 @@ module.exports = function (buffers) {
       var clen = buf.readUInt16LE(offset)
       offset+=2
       for (var i=0; i<clen; i++) {
-        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset)
+        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset) + pindex
         offset+=2
-        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset)
+        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset) + pindex
         offset+=2
-        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset)
+        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset) + pindex
         offset+=2
       }
+      pindex+=plen
     }
   })
   return data
