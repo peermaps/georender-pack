@@ -23,12 +23,10 @@ module.exports = function (item, deps) {
     var offset = 0
     buf.writeUInt8(0x01, offset) 
     offset+=1
-    //buf.writeUInt32LE(type, 1) //type
     varint.encode(type, buf, offset)
-    offset+=typeLen
-    //buf.writeDoubleLE(item.id, 5)
+    offset+=varint.encode.bytes
     varint.encode(id, buf, offset)
-    offset+=idLen
+    offset+=varint.encode.bytes
     buf.writeFloatLE(item.lon, offset)
     offset+=4
     buf.writeFloatLE(item.lat, offset)
@@ -53,32 +51,27 @@ module.exports = function (item, deps) {
       })
       var cells = earcut(coords)
       var cLen = varint.encodingLength(earcut.length/3)
-      //var buf = Buffer.alloc(17 + n*4*2 + (n-2)*3*2)
       var buf = Buffer.alloc(1 + typeLen + idLen + pCount + cLen + n*4*2 + (n-2)*3*2)
       var offset = 0
       buf.writeUInt8(0x03, 0)
       offset+=1
-      //buf.writeUInt32LE(type, 1) //type
       varint.encode(type, buf, offset)
-      offset+=typeLen
-      //buf.writeDoubleLE(item.id, 5)
+      offset+=varint.encode.bytes
       varint.encode(id, buf, offset)
-      offset+=idLen
-      //buf.writeUInt16LE(item.refs.length, 13)
+      offset+=varint.encode.bytes
       varint.encode(item.refs.length, buf, offset)
-      offset+=pCount      
+      offset+=varint.encode.bytes
       item.refs.forEach(function (ref) {
         buf.writeFloatLE(deps[ref].lon, offset)
         offset+=4
         buf.writeFloatLE(deps[ref].lat, offset)
         offset+=4
       })
-      //buf.writeUInt16LE(cells.length/3, offset) //2 bytes
       varint.encode(cells.length/3, buf, offset)
-      offset+=cLen
+      offset+=varint.encode.bytes
       cells.forEach(function (item) {
-        buf.writeUInt16LE(item, offset)
-        offset+=2
+        varint.encode(item, buf, offset)
+        offset+=varint.encode.bytes
       })
     }
     else if (item.refs.length > 1) {
@@ -86,21 +79,16 @@ module.exports = function (item, deps) {
       var typeLen = varint.encodingLength(type)
       var idLen = varint.encodingLength(id)
       var pCount = varint.encodingLength(n)
-      //var buf = Buffer.alloc(15 + item.refs.length*8)
       var buf = Buffer.alloc(1 + typeLen + idLen + pCount + n*8)
       var offset = 0
       buf.writeUInt8(0x02, 0)
       offset+=1
-      //buf.writeUInt32LE(type, 1) //type
       varint.encode(type, buf, offset)
-      offset+=typeLen
-      //buf.writeDoubleLE(item.id, 5)
+      offset+=varint.encode.bytes
       varint.encode(id, buf, offset)
-      offset+=idLen
-      //buf.writeUInt16LE(item.refs.length, 13)
+      offset+=varint.encode.bytes
       varint.encode(item.refs.length, buf, offset)
-      offset+=pCount      
-      //var offset = 15
+      offset+=varint.encode.bytes
       item.refs.forEach(function (ref) {
         buf.writeFloatLE(deps[ref].lon, offset)
         offset+=4

@@ -72,38 +72,31 @@ module.exports = function (buffers) {
     var featureType = buf.readUInt8(offset)
     offset+=1
     if (featureType === 1) {
-      data.point.types[offsets.point.types++] = buf.readUInt32LE(offset)
-      offset+=4
-      data.point.ids[offsets.point.ids++] = buf.readUInt32LE(offset)
-      offset+=4
-      data.point.ids[offsets.point.ids++] = buf.readUInt32LE(offset)
-      offset+=4
+      data.point.types[offsets.point.types++] = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
+      data.point.ids[offsets.point.ids++] = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
       data.point.positions[offsets.point.positions++] = buf.readFloatLE(offset)
       offset+=4
       data.point.positions[offsets.point.positions++] = buf.readFloatLE(offset)
       offset+=4
     }
     else if (featureType === 2) {
-      var type = buf.readUInt32LE(offset)
-      offset+=4
-      var id0 = buf.readUInt32LE(offset)
-      offset+=4
-      var id1 = buf.readUInt32LE(offset)
-      offset+=4
-      var plen = buf.readUInt16LE(offset)
-      offset+=2
+      var type = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
+      var id = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
+      var plen = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
       var positions = []
       var lon, lat
       data.line.types[offsets.line.types++] = type
-      data.line.ids[offsets.line.ids++] = id0
-      data.line.ids[offsets.line.ids++] = id1
+      data.line.ids[offsets.line.ids++] = id
       for (var i=0; i<plen; i++) {
         data.line.types[offsets.line.types++] = type
         data.line.types[offsets.line.types++] = type
-        data.line.ids[offsets.line.ids++] = id0
-        data.line.ids[offsets.line.ids++] = id1
-        data.line.ids[offsets.line.ids++] = id0
-        data.line.ids[offsets.line.ids++] = id1
+        data.line.ids[offsets.line.ids++] = id
+        data.line.ids[offsets.line.ids++] = id
         lon = buf.readFloatLE(offset)
         offset+=4
         lat = buf.readFloatLE(offset)
@@ -119,13 +112,12 @@ module.exports = function (buffers) {
         positions.push([lon, lat])
       }
       data.line.types[offsets.line.types++] = type
-      data.line.ids[offsets.line.ids++] = id0
-      data.line.ids[offsets.line.ids++] = id1
+      data.line.ids[offsets.line.ids++] = id
       data.line.positions[offsets.line.positions++] = lon
       data.line.positions[offsets.line.positions++] = lat
 
       var normals = getNormals(positions)
-      //console.log(positions)
+      //console.log('normals = ', normals)
       var scale = Math.sqrt(normals[0][1])
       data.line.normals[offsets.line.normals++] = normals[0][0][0]*scale
       data.line.normals[offsets.line.normals++] = normals[0][0][1]*scale
@@ -141,32 +133,29 @@ module.exports = function (buffers) {
       data.line.normals[offsets.line.normals++] = data.line.normals[normOffset-1]
     }
     else if (featureType === 3) {
-      var type = buf.readUInt32LE(offset)
-      offset+=4
-      var id0 = buf.readUInt32LE(offset)
-      offset+=4
-      var id1 = buf.readUInt32LE(offset)
-      offset+=4
-      var plen = buf.readUInt16LE(offset)
-      offset+=2
+      var type = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
+      var id = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
+      var plen = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
       for (var i=0; i<plen; i++) {
         data.area.types[offsets.area.types++] = type
-        data.area.ids[offsets.area.ids++] = id0
-        data.area.ids[offsets.area.ids++] = id1
+        data.area.ids[offsets.area.ids++] = id
         data.area.positions[offsets.area.positions++] = buf.readFloatLE(offset)
         offset+=4
         data.area.positions[offsets.area.positions++] = buf.readFloatLE(offset)
         offset+=4
       }
-      var clen = buf.readUInt16LE(offset)
-      offset+=2
+      var clen = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
       for (var i=0; i<clen; i++) {
-        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset) + pindex
-        offset+=2
-        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset) + pindex
-        offset+=2
-        data.area.cells[offsets.area.cells++] = buf.readUInt16LE(offset) + pindex
-        offset+=2
+        data.area.cells[offsets.area.cells++] = varint.decode(buf, offset) + pindex
+        offset+=varint.decode.bytes
+        data.area.cells[offsets.area.cells++] = varint.decode(buf, offset) + pindex
+        offset+=varint.decode.bytes
+        data.area.cells[offsets.area.cells++] = varint.decode(buf, offset) + pindex
+        offset+=varint.decode.bytes
       }
       pindex+=plen
     }
