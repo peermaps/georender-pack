@@ -55,19 +55,15 @@ repo. run `npm run get-data`. if that worked correctly, the `example` directory 
 ## decode
 
 ```
-var decode = require('georender-pack/decode')
-
+var decode = require('../decode.js')
+  
 var buffers = [
-  Buffer.from('0115010000000000084c4080410daeef416391f941', 'hex'),
-  Buffer.from('02cb000000000000103eba7f4109002eefef416ac2f9414aefef41abc2f9417cefef4117c3f941bef0ef41bdc5f9412cf1ef419cc6f94160f1ef41ecc6f94127f2ef4104c8f94139f2ef412dc8f94101f3ef41f0c9f941', 'hex'),
-  Buffer.from('02d300000000000070047c794104004735ef41f28bf9419e35ef41de8bf9410636ef41b08bf9414b36ef41908bf941', 'hex'),
-  Buffer.from('011501000000000050a2507941e815ef415cb6f941', 'hex'),
-  Buffer.from('0315010000000000c01688784107008743ef414d9df941da47ef41039ff9418e48ef41df9df9415746ef41499df9412944ef413b9cf9411344ef41b39cf9418743ef414d9df9410400010006000500050004000300030002000100010005000300000000000000', 'hex')
+  Buffer.from('039502ed8f9330046c63ef412932f841bd68ef418534f8419f6bef41b731f8416c63ef412932f84101010302000000000000000000', 'hex'),
+  Buffer.from('019502a3fdb0bb0e53a5f041b158f941', 'hex'),
+  Buffer.from('02c801a09bd3b701022154f141df2ef941c054f141132ff941', 'hex')
 ]
 
-buffers.forEach(function (buffer) {
-  console.log(decode(buffers))
-})
+console.log(decode(buffers))
 ```
 
 to run this example, do `npm run decode-example`. you should see output like
@@ -75,14 +71,12 @@ this:
 
 ```
 { point:
-   { type: Float32Array [ 277, 277 ],
-     id: Float32Array [ 34081152, 26544676 ],
-     position:
-      Float64Array [
-        29.959985733032227,
-        31.19598960876465,
-        29.885696411132812,
-        31.21404266357422 ] }, ...
+   { types: Float32Array [ 277 ],
+     ids: Float32Array [ 3882630912, 0 ],
+     positions: Float32Array [ 30.080724716186523, 31.168306350708008 ] },
+  line:
+   { types: Float32Array [ 200, 200, 200, 200, 200, 200 ], ...
+
 ```
 
 # api
@@ -119,20 +113,20 @@ output is an object containing buffer data in this structure:
 ```
 {
   point: {
-    type: Float32Array [],
-    id: Float32Array [],
-    position: Float32Array []
+    types: Float32Array [],
+    ids: Float32Array [],
+    positions: Float32Array []
   },
   line: {
-    type: Float32Array [],
-    id: Float32Array [],
-    position: Float32Array []
+    types: Float32Array [],
+    ids: Float32Array [],
+    positions: Float32Array []
   },
   area: {
-    type: Float32Array [],
-    id: Float32Array [],
-    position: Float32Array [],
-    cell: Uint32Array []
+    types: Float32Array [],
+    ids: Float32Array [],
+    positions: Float32Array [],
+    cells: Uint32Array []
   }
 }
 ```
