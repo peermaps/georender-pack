@@ -115,18 +115,21 @@ output is an object containing buffer data in this structure:
   point: {
     types: Float32Array [],
     ids: Float32Array [],
-    positions: Float32Array []
+    positions: Float32Array [],
+    labels: {} // id => [ label strings ]
   },
   line: {
     types: Float32Array [],
     ids: Float32Array [],
-    positions: Float32Array []
+    positions: Float32Array [],
+    labels: {} // id => [ label strings ]
   },
   area: {
     types: Float32Array [],
     ids: Float32Array [],
     positions: Float32Array [],
-    cells: Uint32Array []
+    cells: Uint32Array [],
+    labels: {} // id => [ label strings ]
   }
 }
 ```
@@ -134,6 +137,12 @@ output is an object containing buffer data in this structure:
 the output data does not come out as one array for each point/line/area, but in arrays that
 include all the point/line/area data. points that make up each point/line/area are accessible
 by offset into these arrays.
+
+here's an example of what an array of label strings might look like:
+
+```
+['=Toshkent', 'aa=Tashkent', 'en=Tashkent', 'alt:uz=Тoшкент']
+```
 
 # installation
 

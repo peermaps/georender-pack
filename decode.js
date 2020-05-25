@@ -46,25 +46,28 @@ module.exports = function (buffers) {
     point: {
       types: new Float32Array(sizes.point.types),
       ids: new Float32Array(sizes.point.ids),
-      positions: new Float32Array(sizes.point.positions)
+      positions: new Float32Array(sizes.point.positions),
+      labels: {}
     },
     line: {
       types: new Float32Array(sizes.line.types),
       ids: new Float32Array(sizes.line.ids),
       positions: new Float32Array(sizes.line.positions),
-      normals: new Float32Array(sizes.line.normals)
+      normals: new Float32Array(sizes.line.normals),
+      labels: {}
     },
     area: {
       types: new Float32Array(sizes.area.types),
       ids: new Float32Array(sizes.area.ids),
       positions: new Float32Array(sizes.area.positions),
-      cells: new Uint32Array(sizes.area.cells)
+      cells: new Uint32Array(sizes.area.cells),
+      labels: {}
     }
   }
   var offsets = {
-    point: { types: 0, ids: 0, positions: 0 },
-    line: { types: 0, ids: 0, positions: 0, normals: 0 },
-    area: { types: 0, ids: 0, positions: 0, cells: 0 }
+    point: { types: 0, ids: 0, positions: 0, labels: 0 },
+    line: { types: 0, ids: 0, positions: 0, normals: 0, labels: 0 },
+    area: { types: 0, ids: 0, positions: 0, cells: 0, labels: 0 }
   }
   var pindex = 0
   buffers.forEach(function (buf) {
@@ -74,12 +77,14 @@ module.exports = function (buffers) {
     if (featureType === 1) {
       data.point.types[offsets.point.types++] = varint.decode(buf, offset)
       offset+=varint.decode.bytes
-      data.point.ids[offsets.point.ids++] = varint.decode(buf, offset)
+      var id = varint.decode(buf, offset)
       offset+=varint.decode.bytes
+      data.point.ids[offsets.point.ids++] = id
       data.point.positions[offsets.point.positions++] = buf.readFloatLE(offset)
       offset+=4
       data.point.positions[offsets.point.positions++] = buf.readFloatLE(offset)
       offset+=4
+      offset = decodeLabels(buf, offset, data.point, id)
     }
     else if (featureType === 2) {
       var type = varint.decode(buf, offset)
@@ -131,6 +136,7 @@ module.exports = function (buffers) {
       var normOffset = offsets.line.normals
       data.line.normals[offsets.line.normals++] = data.line.normals[normOffset-2]
       data.line.normals[offsets.line.normals++] = data.line.normals[normOffset-1]
+      offset = decodeLabels(buf, offset, data.line, id)
     }
     else if (featureType === 3) {
       var type = varint.decode(buf, offset)
@@ -158,7 +164,20 @@ module.exports = function (buffers) {
         offset+=varint.decode.bytes
       }
       pindex+=plen
+      offset = decodeLabels(buf, offset, data.area, id)
     }
   })
   return data
+}
+
+function decodeLabels (buf, offset, data, id) {
+  data.labels[id] = []
+  do {
+    var labelLength = varint.decode(buf, offset)
+    offset+=varint.decode.bytes
+    var labelData = buf.slice(offset, offset+labelLength)
+    offset+=labelLength
+    data.labels[id].push(labelData.toString())
+  } while (labelLength > 0)
+  return offset
 }
