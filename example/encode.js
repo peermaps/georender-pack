@@ -2,7 +2,7 @@ var fs = require('fs')
 var through = require('through2')
 var parseOSM = require('osm-pbf-parser')
 var georenderPack = require('../encode.js')
- 
+
 var osm = parseOSM()
 var allItems = {}
 var itemsRefsObject = {}
@@ -29,6 +29,6 @@ function write (items, enc, next) {
 function end (next) {
   Object.values(allItems).forEach(function (item) {
     //georenderPack(item, itemsRefsObject)
-    console.log(georenderPack(item, itemsRefsObject))
+    console.log(georenderPack(item, itemsRefsObject).toString('hex'))
   })
 }
