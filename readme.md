@@ -144,6 +144,31 @@ here's an example of what an array of label strings might look like:
 ['=Toshkent', 'aa=Tashkent', 'en=Tashkent', 'alt:uz=Тoшкент']
 ```
 
+## `Decoder`
+
+The Decoder class is useful if you are loading a large pbf file and don't want
+to load the whole file into memory to decode it. 
+
+Use `decode(buffer)` on each encoded buffer, and then `decoder.data` will
+contain the decoded data. 
+
+```js
+var decoder = new Decoder()
+
+var rl = readline.createInterface({
+  input: fs.createReadStream(filename)
+})
+
+rl.on('line', (buffer) => {
+  decoder.decode(Buffer.from(buffer, 'hex'))
+})
+
+rl.on('close', () => {
+  console.log(decoder.data)
+})
+```
+
+
 # installation
 
 in your terminal, run `npm install georender-pack`.
