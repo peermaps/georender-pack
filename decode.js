@@ -22,7 +22,7 @@ module.exports = function (buffers) {
       var plen = varint.decode(buf, offset) //pcount
       offset+=varint.decode.bytes
       sizes.line.types+=plen*2+2
-      sizes.line.ids+=plen*4+4
+      sizes.line.ids+=plen*2+2
       sizes.line.positions+=plen*4+4
       sizes.line.normals+=plen*4+4
     }
@@ -58,7 +58,8 @@ module.exports = function (buffers) {
     },
     area: {
       types: new Float32Array(sizes.area.types),
-      ids: new Float32Array(sizes.area.ids),
+      //ids: new Float32Array(sizes.area.ids),
+      ids: Array(sizes.area.ids.length).fill(0),
       positions: new Float32Array(sizes.area.positions),
       cells: new Uint32Array(sizes.area.cells),
       labels: {}
