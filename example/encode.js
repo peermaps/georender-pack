@@ -2,7 +2,7 @@ var fs = require('fs')
 var through = require('through2')
 var parseOSM = require('osm-pbf-parser')
 var georenderPack = require('../encode.js')
- 
+
 var osm = parseOSM()
 var allItems = {}
 var itemsRefsObject = {}
