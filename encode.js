@@ -4,17 +4,15 @@ var osmIsArea = require('osm-is-area')
 var varint = require('varint')
 
 module.exports = function (item, deps) {
-  var type
+  var type = features['place.other']
   if (Object.keys(item.tags).length !== 0){
     var tags = Object.entries(item.tags)
     tags.forEach(function (tagPair) {
-      if (features[tagPair[0] + '.' + tagPair[1]]){
+      if (features[tagPair[0] + '.' + tagPair[1]] !== undefined) {
         type = features[tagPair[0] + '.' + tagPair[1]]
       }
-      else type = 277 //place.other
     })
   }
-  else type = 277 //place.other
   var id = item.id
 
   if (item.type === 'node') {
