@@ -45,13 +45,15 @@ module.exports = function (buffers) {
   var data = {
     point: {
       types: new Float32Array(sizes.point.types),
-      ids: new Float32Array(sizes.point.ids),
+      //ids: new Float32Array(sizes.point.ids),
+      ids: Array(sizes.point.ids.length).fill(0),
       positions: new Float32Array(sizes.point.positions),
       labels: {}
     },
     line: {
       types: new Float32Array(sizes.line.types),
-      ids: new Float32Array(sizes.line.ids),
+      //ids: new Float32Array(sizes.line.ids),
+      ids: Array(sizes.line.ids.length).fill(0),
       positions: new Float32Array(sizes.line.positions),
       normals: new Float32Array(sizes.line.normals),
       labels: {}
