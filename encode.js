@@ -21,7 +21,7 @@ module.exports = function (item, deps) {
     var labelLen = getLabelLen(item.tags)
     var buf = Buffer.alloc(9 + typeLen + idLen + labelLen)
     var offset = 0
-    buf.writeUInt8(0x01, offset) 
+    buf.writeUInt8(0x01, offset)
     offset+=1
     varint.encode(type, buf, offset)
     offset+=varint.encode.bytes
@@ -45,16 +45,11 @@ module.exports = function (item, deps) {
         coords.push(deps[ref].lat)
       })
       var cells = earcut(coords)
-      var coords = []
-      item.refs.forEach(function (ref) {
-        coords.push(deps[ref].lon)
-        coords.push(deps[ref].lat)
-      })
-      var cells = earcut(coords)
-      var cLen = varint.encodingLength(earcut.length/3)
+      var cLen = varint.encodingLength(cells.length/3)
+      var cLenData = cells.reduce((acc, cell) => acc + varint.encodingLength(cell), 0)
       var labelLen = getLabelLen(item.tags)
       var buf = Buffer.alloc(1 + typeLen + idLen + pCount + cLen + n*4*2
-        + (n-2)*3*2 + labelLen)
+        + cLenData + labelLen)
       var offset = 0
       buf.writeUInt8(0x03, 0)
       offset+=1
@@ -72,8 +67,8 @@ module.exports = function (item, deps) {
       })
       varint.encode(cells.length/3, buf, offset)
       offset+=varint.encode.bytes
-      cells.forEach(function (item) {
-        varint.encode(item, buf, offset)
+      cells.forEach(function (cell) {
+        varint.encode(cell, buf, offset)
         offset+=varint.encode.bytes
       })
       writeLabelData(item.tags, buf, offset)
@@ -115,7 +110,7 @@ function getLabelLen (tags) {
     if (!/^([^:]+_|)name($|:)/.test(key)) { return }
     var pre = key.replace(/^(|[^:]+_)name($|:)/,'')
     var dataLen = Buffer.byteLength(pre) + 1
-      + Buffer.byteLength(tags[key]) 
+      + Buffer.byteLength(tags[key])
     labelLen += varint.encodingLength(dataLen) + dataLen
   })
   return labelLen
