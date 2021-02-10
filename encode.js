@@ -45,12 +45,6 @@ module.exports = function (item, deps) {
         coords.push(deps[ref].lat)
       })
       var cells = earcut(coords)
-      var coords = []
-      item.refs.forEach(function (ref) {
-        coords.push(deps[ref].lon)
-        coords.push(deps[ref].lat)
-      })
-      var cells = earcut(coords)
       var cLen = varint.encodingLength(earcut.length/3)
       var labelLen = getLabelLen(item.tags)
       var buf = Buffer.alloc(1 + typeLen + idLen + pCount + cLen + n*4*2
@@ -99,6 +93,54 @@ module.exports = function (item, deps) {
         offset+=4
         buf.writeFloatLE(deps[ref].lat, offset)
         offset+=4
+      })
+      writeLabelData(item.tags, buf, offset)
+    }
+    else {
+      var buf = Buffer.alloc(0)
+    }
+  }
+  if (item.type === 'relation') {
+    if (osmIsArea(item)) {
+      var typeLen = varint.encodingLength(item.tags.type)
+      var idLen = varint.encodingLength(item.id)
+      var coords = []
+      item.members.forEach(function (ref) {
+        if (deps[ref.id]) {
+          deps[ref.id].refs.forEach(function (ref) {
+            coords.push(deps[ref].lon)
+            coords.push(deps[ref].lat)
+          })
+        }
+      })
+      var pCount = coords.length/2
+      var pCountLen = varint.encodingLength(pCount)
+      var cells = earcut(coords)
+      var cLen = varint.encodingLength(cells.length/3)
+      var cSize = 0
+      for (var i=0; i<cells.length; i++) {
+        cSize+=varint.encodingLength(cells[i])
+      }
+      var labelLen = getLabelLen(item.tags)
+      var buf = Buffer.alloc(1 + typeLen + idLen + pCountLen + pCount*4*2 + cLen + cSize + labelLen)
+      var offset = 0
+      buf.writeUInt8(0x03, 0)
+      offset+=1
+      varint.encode(type, buf, offset)
+      offset+=varint.encode.bytes
+      varint.encode(item.id, buf, offset)
+      offset+=varint.encode.bytes
+      varint.encode(pCount, buf, offset)
+      offset+=varint.encode.bytes
+      for (var i=0; i<coords.length; i++) {
+        buf.writeFloatLE(coords[i], offset)
+        offset+=4
+      }
+      varint.encode(cells.length/3, buf, offset)
+      offset+=varint.encode.bytes
+      cells.forEach(function (item) {
+        varint.encode(item, buf, offset)
+        offset+=varint.encode.bytes
       })
       writeLabelData(item.tags, buf, offset)
     }
