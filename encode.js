@@ -35,20 +35,23 @@ module.exports = function (item, deps) {
   }
   if (item.type === 'way') {
     if (osmIsArea(item)) {
-      var n = item.refs.length
       var typeLen = varint.encodingLength(type)
       var idLen = varint.encodingLength(id)
-      var pCount = varint.encodingLength(n)
       var coords = []
       item.refs.forEach(function (ref) {
         coords.push(deps[ref].lon)
         coords.push(deps[ref].lat)
       })
+      var pCount = coords.length/2
+      var pCountLen = varint.encodingLength(pCount)
       var cells = earcut(coords)
-      var cLen = varint.encodingLength(earcut.length/3)
+      var cLen = varint.encodingLength(cells.length/3)
+      var cSize = 0
+      for (var i=0; i<cells.length; i++) {
+        cSize+=varint.encodingLength(cells[i])
+      }
       var labelLen = getLabelLen(item.tags)
-      var buf = Buffer.alloc(1 + typeLen + idLen + pCount + cLen + n*4*2
-        + (n-2)*3*2 + labelLen)
+      var buf = Buffer.alloc(1 + typeLen + idLen + pCountLen + pCount*4*2 + cLen + cSize + labelLen)
       var offset = 0
       buf.writeUInt8(0x03, 0)
       offset+=1
@@ -56,7 +59,7 @@ module.exports = function (item, deps) {
       offset+=varint.encode.bytes
       varint.encode(id, buf, offset)
       offset+=varint.encode.bytes
-      varint.encode(item.refs.length, buf, offset)
+      varint.encode(pCount, buf, offset)
       offset+=varint.encode.bytes
       item.refs.forEach(function (ref) {
         buf.writeFloatLE(deps[ref].lon, offset)
