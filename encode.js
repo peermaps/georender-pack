@@ -38,10 +38,10 @@ module.exports = function (item, deps) {
       var typeLen = varint.encodingLength(type)
       var idLen = varint.encodingLength(id)
       var coords = []
-      item.refs.forEach(function (ref) {
-        coords.push(deps[ref].lon)
-        coords.push(deps[ref].lat)
-      })
+      for (var i=0; i<item.refs.length; i++) {
+        coords.push(deps[item.refs[i]].lon)
+        coords.push(deps[item.refs[i]].lat) 
+      }
       var pCount = coords.length/2
       var pCountLen = varint.encodingLength(pCount)
       var cells = earcut(coords)
@@ -61,27 +61,30 @@ module.exports = function (item, deps) {
       offset+=varint.encode.bytes
       varint.encode(pCount, buf, offset)
       offset+=varint.encode.bytes
-      item.refs.forEach(function (ref) {
-        buf.writeFloatLE(deps[ref].lon, offset)
+      for (var i=0; i<coords.length; i++) {
+        buf.writeFloatLE(coords[i], offset)
         offset+=4
-        buf.writeFloatLE(deps[ref].lat, offset)
-        offset+=4
-      })
+      }
       varint.encode(cells.length/3, buf, offset)
       offset+=varint.encode.bytes
-      cells.forEach(function (item) {
-        varint.encode(item, buf, offset)
+      for (var i=0; i<cells.length; i++){
+        varint.encode(cells[i], buf, offset)
         offset+=varint.encode.bytes
-      })
+      }
       writeLabelData(item.tags, buf, offset)
     }
     else if (item.refs.length > 1) {
-      var n = item.refs.length
       var typeLen = varint.encodingLength(type)
       var idLen = varint.encodingLength(id)
-      var pCount = varint.encodingLength(n)
+      var coords = []
+      for (var i=0; i<item.refs.length; i++) {
+        coords.push(deps[item.refs[i]].lon)
+        coords.push(deps[item.refs[i]].lat) 
+      }
+      var pCount = coords.length/2
+      var pCountLen = varint.encodingLength(pCount)
       var labelLen = getLabelLen(item.tags)
-      var buf = Buffer.alloc(1 + typeLen + idLen + pCount + n*8 + labelLen)
+      var buf = Buffer.alloc(1 + typeLen + idLen + pCount*4*2 + pCountLen + labelLen)
       var offset = 0
       buf.writeUInt8(0x02, 0)
       offset+=1
@@ -89,14 +92,12 @@ module.exports = function (item, deps) {
       offset+=varint.encode.bytes
       varint.encode(id, buf, offset)
       offset+=varint.encode.bytes
-      varint.encode(item.refs.length, buf, offset)
+      varint.encode(pCount, buf, offset)
       offset+=varint.encode.bytes
-      item.refs.forEach(function (ref) {
-        buf.writeFloatLE(deps[ref].lon, offset)
+      for (var i=0; i<coords.length; i++) {
+        buf.writeFloatLE(coords[i], offset)
         offset+=4
-        buf.writeFloatLE(deps[ref].lat, offset)
-        offset+=4
-      })
+      }
       writeLabelData(item.tags, buf, offset)
     }
     else {
@@ -105,8 +106,8 @@ module.exports = function (item, deps) {
   }
   if (item.type === 'relation') {
     if (osmIsArea(item)) {
-      var typeLen = varint.encodingLength(item.tags.type)
-      var idLen = varint.encodingLength(item.id)
+      var typeLen = varint.encodingLength(type)
+      var idLen = varint.encodingLength(id)
       var coords = []
       item.members.forEach(function (ref) {
         if (deps[ref.id]) {
@@ -131,7 +132,7 @@ module.exports = function (item, deps) {
       offset+=1
       varint.encode(type, buf, offset)
       offset+=varint.encode.bytes
-      varint.encode(item.id, buf, offset)
+      varint.encode(id, buf, offset)
       offset+=varint.encode.bytes
       varint.encode(pCount, buf, offset)
       offset+=varint.encode.bytes
