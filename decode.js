@@ -7,6 +7,7 @@ module.exports = function (buffers) {
     area: { types: 0, ids: 0, positions: 0, cells: 0 }
   }
   buffers.forEach(function (buf) {
+    if (!buf.length) return //skip this
     var featureType = buf.readUInt8(0)
     var offset = 1
     if (featureType === 1) {
@@ -74,6 +75,7 @@ module.exports = function (buffers) {
   }
   var pindex = 0
   buffers.forEach(function (buf) {
+    if (!buf.length) return //skip this
     var offset = 0
     var featureType = buf.readUInt8(offset)
     offset+=1
