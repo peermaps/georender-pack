@@ -109,14 +109,17 @@ module.exports = function (item, deps) {
       var typeLen = varint.encodingLength(type)
       var idLen = varint.encodingLength(id)
       var coords = []
-      item.members.forEach(function (ref) {
-        if (deps[ref.id]) {
-          deps[ref.id].refs.forEach(function (ref) {
-            coords.push(deps[ref].lon)
-            coords.push(deps[ref].lat)
-          })
+      var ref0 = 0
+      for (var i=0; i<item.members.length; i++){
+        var member = deps[item.members[i].id]
+        if (member) {
+          for (var j=0; j<member.refs.length; j++) {
+            var ref = deps[member.refs[j]]
+            coords.push(ref.lon)
+            coords.push(ref.lat)
+          }
         }
-      })
+      }
       var pCount = coords.length/2
       var pCountLen = varint.encodingLength(pCount)
       var cells = earcut(coords)
