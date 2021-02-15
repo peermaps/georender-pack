@@ -109,20 +109,67 @@ module.exports = function (item, deps) {
       var typeLen = varint.encodingLength(type)
       var idLen = varint.encodingLength(id)
       var coords = []
-      var ref0 = 0
+      var cells = []
+      var holes = []
+      var ppositions = []
+      var closed = false
+      var ref0 = -1
       for (var i=0; i<item.members.length; i++){
-        var member = deps[item.members[i].id]
-        if (member) {
+        var role = item.members[i].role
+        if (role === "outer") {
+          if (closed) {
+            holes.splice(-1,1)
+            var pcells = earcut(ppositions, holes)
+            for (var j=0; j<pcells.length; j++) {
+              cells.push(pcells[j] + coords.length/2 - ppositions.length/2)
+            }
+            ppositions = []
+            holes = []
+            ref0 = -1
+          }
+          if (!deps[item.members[i].id]) continue
+          var member = deps[item.members[i].id]
+          if (!member.refs) continue
           for (var j=0; j<member.refs.length; j++) {
+            if (ref0 === member.refs[j]) {
+              closed = true
+              ref0 = -1
+              continue
+            }
+            if (ref0 < 0) { ref0 = member.refs[j] }
             var ref = deps[member.refs[j]]
-            coords.push(ref.lon)
-            coords.push(ref.lat)
+            ppositions.push(ref.lon, ref.lat)
+            coords.push(ref.lon, ref.lat)
+          }
+        }
+        else if (item.members[i].role === "inner") {
+          if (!deps[item.members[i].id]) continue
+          var member = deps[item.members[i].id]
+          if (!member.refs) continue
+          for (var j=0; j<member.refs.length; j++) {
+            if (ref0 === member.refs[j]) {
+              ref0 = -1
+              holes.push(ppositions.length/2)
+              continue
+            }
+            if (ref0 < 0) { ref0 = member.refs[j] }
+            var ref = deps[member.refs[j]]
+            ppositions.push(ref.lon, ref.lat)
+            coords.push(ref.lon, ref.lat)
           }
         }
       }
+      if (closed) {
+        holes.splice(-1,1)
+        var pcells = earcut(ppositions, holes)
+        for (var j=0; j<pcells.length; j++) {
+          cells.push(pcells[j] + coords.length/2 - ppositions.length/2)
+        }
+        ppositions = []
+        holes = []
+      }
       var pCount = coords.length/2
       var pCountLen = varint.encodingLength(pCount)
-      var cells = earcut(coords)
       var cLen = varint.encodingLength(cells.length/3)
       var cSize = 0
       for (var i=0; i<cells.length; i++) {
