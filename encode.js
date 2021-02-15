@@ -118,7 +118,6 @@ module.exports = function (item, deps) {
         var role = item.members[i].role
         if (role === "outer") {
           if (closed) {
-            holes.splice(-1,1)
             var pcells = earcut(ppositions, holes)
             for (var j=0; j<pcells.length; j++) {
               cells.push(pcells[j] + coords.length/2 - ppositions.length/2)
@@ -149,10 +148,12 @@ module.exports = function (item, deps) {
           for (var j=0; j<member.refs.length; j++) {
             if (ref0 === member.refs[j]) {
               ref0 = -1
-              holes.push(ppositions.length/2)
               continue
             }
-            if (ref0 < 0) { ref0 = member.refs[j] }
+            if (ref0 < 0) {
+              ref0 = member.refs[j]
+              holes.push(ppositions.length/2)
+            }
             var ref = deps[member.refs[j]]
             ppositions.push(ref.lon, ref.lat)
             coords.push(ref.lon, ref.lat)
@@ -160,7 +161,6 @@ module.exports = function (item, deps) {
         }
       }
       if (closed) {
-        holes.splice(-1,1)
         var pcells = earcut(ppositions, holes)
         for (var j=0; j<pcells.length; j++) {
           cells.push(pcells[j] + coords.length/2 - ppositions.length/2)
