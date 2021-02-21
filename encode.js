@@ -2,6 +2,7 @@ var earcut = require('earcut')
 var features = require('./features.json')
 var osmIsArea = require('osm-is-area')
 var varint = require('varint')
+var sortMembers = require('./lib/sort.js')
 
 module.exports = function (item, deps) {
   var type = features['place.other']
@@ -114,8 +115,10 @@ module.exports = function (item, deps) {
       var ppositions = []
       var closed = false
       var ref0 = -1
-      for (var i=0; i<item.members.length; i++){
-        var role = item.members[i].role
+			var smembers = sortMembers(item.members, deps)
+
+      for (var i=0; i<smembers.length; i++) {
+        var role = smembers[i].role
         if (role === "outer") {
           if (closed) {
             var pcells = earcut(ppositions, holes)
@@ -126,9 +129,10 @@ module.exports = function (item, deps) {
             holes = []
             ref0 = -1
           }
-          if (!deps[item.members[i].id]) continue
-          var member = deps[item.members[i].id]
+          if (!deps[smembers[i].id]) continue
+          var member = deps[smembers[i].id]
           if (!member.refs) continue
+          if (smembers[i].reverse) member.refs.reverse()
           for (var j=0; j<member.refs.length; j++) {
             if (ref0 === member.refs[j]) {
               closed = true
@@ -141,10 +145,11 @@ module.exports = function (item, deps) {
             coords.push(ref.lon, ref.lat)
           }
         }
-        else if (item.members[i].role === "inner") {
-          if (!deps[item.members[i].id]) continue
-          var member = deps[item.members[i].id]
+        else if (smembers[i].role === "inner") {
+          if (!deps[smembers[i].id]) continue
+          var member = deps[smembers[i].id]
           if (!member.refs) continue
+          if (smembers[i].reverse) member.refs.reverse()
           for (var j=0; j<member.refs.length; j++) {
             if (ref0 === member.refs[j]) {
               ref0 = -1
