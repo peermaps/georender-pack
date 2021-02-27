@@ -115,7 +115,7 @@ module.exports = function (item, deps) {
       var ppositions = []
       var closed = false
       var ref0 = -1
-			var smembers = sortMembers(item.members, deps)
+      var smembers = sortMembers(item.members, deps)
 
       for (var i=0; i<smembers.length; i++) {
         var role = smembers[i].role
