@@ -177,6 +177,7 @@ function decodeLabels (buf, offset, data, id) {
   data.labels[id] = []
   do {
     var labelLength = varint.decode(buf, offset)
+    if (labelLength === 0) continue
     offset+=varint.decode.bytes
     var labelData = buf.slice(offset, offset+labelLength)
     offset+=labelLength
