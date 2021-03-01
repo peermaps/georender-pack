@@ -1,0 +1,26 @@
+[
+  {
+    "reverse": false,
+    "type": "way",
+    "id": 654450865,
+    "role": "outer"
+  },
+  {
+    "reverse": false,
+    "type": "way",
+    "id": 614234562,
+    "role": "outer"
+  },
+  {
+    "reverse": false,
+    "type": "way",
+    "id": 654450879,
+    "role": "outer"
+  },
+  {
+    "reverse": true,
+    "type": "way",
+    "id": 654450878,
+    "role": "outer"
+  }
+]
