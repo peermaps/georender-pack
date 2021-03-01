@@ -115,8 +115,16 @@ module.exports = function (item, deps) {
       var ppositions = []
       var closed = false
       var ref0 = -1
-      var smembers = sortMembers(item.members, deps)
-
+      var smembers = sortMembers(item.members, deps, item.id)
+      /* generate deps for test cases
+      var test = {}
+      if (item.id === 9063063) {
+        for (var i=0; i<item.members.length; i++) {
+          if (!deps[item.members[i].id]) console.error(item.members[i].id)
+          test[item.members[i].id] = deps[item.members[i].id]
+        }
+      }
+      */
       for (var i=0; i<smembers.length; i++) {
         var role = smembers[i].role
         if (role === "outer") {

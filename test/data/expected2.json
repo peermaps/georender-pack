@@ -2,49 +2,37 @@
   {
     "reverse": false,
     "type": "way",
-    "id": 651154036,
+    "id": 654450880,
     "role": "outer"
   },
   {
     "reverse": false,
     "type": "way",
-    "id": 651154039,
+    "id": 654450879,
     "role": "outer"
   },
   {
     "reverse": false,
     "type": "way",
-    "id": 651154016,
+    "id": 654450877,
     "role": "outer"
   },
   {
     "reverse": false,
     "type": "way",
-    "id": 651154010,
+    "id": 654450865,
+    "role": "outer"
+  },
+  {
+    "reverse": false,
+    "type": "way",
+    "id": 654450875,
     "role": "outer"
   },
   {
     "reverse": true,
     "type": "way",
-    "id": 651153979,
-    "role": "outer"
-  },
-  {
-    "reverse": true,
-    "type": "way",
-    "id": 651154046,
-    "role": "outer"
-  },
-  {
-    "reverse": true,
-    "type": "way",
-    "id": 651154035,
-    "role": "outer"
-  },
-  {
-    "reverse": false,
-    "type": "way",
-    "id": 651154057,
+    "id": 654450913,
     "role": "outer"
   }
 ]
