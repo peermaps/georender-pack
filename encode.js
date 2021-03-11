@@ -3,16 +3,34 @@ var features = require('./features.json')
 var osmIsArea = require('osm-is-area')
 var varint = require('varint')
 var sortMembers = require('./lib/sort.js')
+var tagPriorities = require('./lib/tagpriorities.json')
 
 module.exports = function (item, deps) {
   var type = features['place.other']
-  if (Object.keys(item.tags).length !== 0){
-    var tags = Object.entries(item.tags)
-    tags.forEach(function (tagPair) {
-      if (features[tagPair[0] + '.' + tagPair[1]] !== undefined) {
-        type = features[tagPair[0] + '.' + tagPair[1]]
+  var tags = Object.entries(item.tags)
+  if(tags.length !== 0){
+    var arr = []
+    var priorities = []
+    for (var i=0; i<tags.length; i++) {
+      if (features[tags[i][0] + '.' + tags[i][1]] !== undefined) {
+        type = features[tags[i][0] + '.' + tags[i][1]]
+        arr.push(tags[i][0] + '.' + tags[i][1])
       }
-    })
+    }
+    if (arr.length > 1) {
+      arr.sort()
+      for (var j=0; j<arr.length; j++) {
+        if (tagPriorities[arr[j]] && tagPriorities[arr[j]].priority) {
+          priorities.push(tagPriorities[arr[j]].priority)
+        }
+        else if (tagPriorities[arr[j].split('.')[0]+'.*'] &&
+          tagPriorities[arr[j].split('.')[0]+'.*'].priority) {
+            priorities.push(tagPriorities[arr[j].split('.')[0]+'.*'].priority)
+        }
+        else priorities.push(50)
+      }
+      type = features[arr[priorities.indexOf(Math.max(...priorities))]]
+    }
   }
   var id = item.id
 
