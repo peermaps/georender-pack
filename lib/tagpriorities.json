@@ -5,50 +5,8 @@
   "aerialway.chair_lift": {
     "priority": 100
   },
-  "aerialway.drag_lift": {
-    "fallback": ["aerialway.chair_lift"]
-  },
-  "aerialway.gondola": {
-    "fallback": ["aerialway.cable_car"]
-  },
-  "aerialway.goods": {
-    "fallback": ["aerialway.cable_car"]
-  },
-  "aerialway.j-bar": {
-    "fallback": ["aerialway.chair_lift"]
-  },
-  "aerialway.magic_carpet": {
-    "fallback": ["aerialway.chair_lift"]
-  },
-  "aerialway.mixed_lift": {
-    "fallback": ["aerialway.cable_car"]
-  },
-  "aerialway.other": {
-    "fallback": ["aerialway.cable_car"]
-  },
-  "aerialway.platter": {
-    "fallback": ["aerialway.chair_lift"]
-  },
-  "aerialway.rope_tow": {
-    "fallback": ["aerialway.chair_lift"]
-  },
-  "aerialway.station": {
-    "fallback": ["highway.bus_stop"]
-  },
-  "aerialway.t-bar": {
-    "fallback": ["aerialway.chair_lift"]
-  },
-  "aerialway.zip_line": {
-    "fallback": ["aerialway.chair_lift"]
-  },
   "aeroway.aerodrome": {
     "priority": 100
-  },
-  "aeroway.apron": {
-    "fallback": ["aeroway.aerodrome"]
-  },
-  "aeroway.heliport": {
-    "fallback": ["aeroway.helipad"]
   },
   "amenity.*": {
     "priority": 60
@@ -62,16 +20,6 @@
   "building.*": {
     "priority": 20
   },
-  "building.government": {
-    "alias": "office.government"
-  },
-  "building.hospital": {
-    "alias": "amenity.hospital"
-  },
-  "building.university": {
-    "alias": ["amenity.university"],
-    "fallback": "building.yes"
-  },
   "building.yes": {
     "priority": 20
   },
@@ -80,9 +28,6 @@
   },
   "landuse.*": {
     "priority": 10
-  },
-  "leisure.fitness_centre": {
-    "alias": ["leisure.sports_centre"]
   },
   "man_made.lighthouse": {
     "priority": 70
