@@ -1,5 +1,6 @@
 var getNormals = require('polyline-normals')
 var varint = require('varint')
+
 module.exports = function (buffers) {
   var sizes = {
     point: { types: 0, ids: 0, positions: 0 },
@@ -7,6 +8,7 @@ module.exports = function (buffers) {
     area: { types: 0, ids: 0, positions: 0, cells: 0 }
   }
   buffers.forEach(function (buf) {
+    if (buf.length === 0) return
     var featureType = buf.readUInt8(0)
     var offset = 1
     if (featureType === 1) {
@@ -74,6 +76,7 @@ module.exports = function (buffers) {
   }
   var pindex = 0
   buffers.forEach(function (buf) {
+    if (buf.length === 0) return
     var offset = 0
     var featureType = buf.readUInt8(offset)
     offset+=1
@@ -125,7 +128,6 @@ module.exports = function (buffers) {
       data.line.positions[offsets.line.positions++] = lat
 
       var normals = getNormals(positions)
-      //console.log('normals = ', normals)
       var scale = Math.sqrt(normals[0][1])
       data.line.normals[offsets.line.normals++] = normals[0][0][0]*scale
       data.line.normals[offsets.line.normals++] = normals[0][0][1]*scale

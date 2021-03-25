@@ -95,8 +95,7 @@ or you can load just the method that you need:
 
 ## encode(item[, itemDependencies])
 
-input is a single osm entry for a node or way (this package currently doesn't handle relations)
-processed through
+input is a single osm entry for a node, way, or relation processed through
 [`osm-pbf-parser`](https://www.npmjs.com/package/osm-pbf-parser). there is a
 second, optional argument for any dependencies for the first argument (for
 example, if the first argument is a way, the second argument should contain data

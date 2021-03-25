@@ -53,11 +53,18 @@ module.exports = function (item, deps) {
     writeLabelData(item.tags, buf, offset)
   }
   if (item.type === 'way') {
+    for (var i=0; i<item.refs.length; i++) {
+      if (!deps[item.refs[i]]) {
+        var buf = Buffer.alloc(0)
+        return
+      }
+    }
     if (osmIsArea(item)) {
       var typeLen = varint.encodingLength(type)
       var idLen = varint.encodingLength(id)
       var coords = []
       for (var i=0; i<item.refs.length; i++) {
+        if (!deps[item.refs[i]]) continue
         coords.push(deps[item.refs[i]].lon)
         coords.push(deps[item.refs[i]].lat) 
       }
@@ -97,6 +104,7 @@ module.exports = function (item, deps) {
       var idLen = varint.encodingLength(id)
       var coords = []
       for (var i=0; i<item.refs.length; i++) {
+        if (!deps[item.refs[i]]) continue
         coords.push(deps[item.refs[i]].lon)
         coords.push(deps[item.refs[i]].lat) 
       }
@@ -189,6 +197,7 @@ module.exports = function (item, deps) {
             }
             if (ref0 < 0) { ref0 = member.refs[j] }
             var ref = deps[member.refs[j]]
+            if (!ref) continue
             ppositions.push(ref.lon, ref.lat)
             coords.push(ref.lon, ref.lat)
           }
@@ -208,6 +217,7 @@ module.exports = function (item, deps) {
               holes.push(ppositions.length/2)
             }
             var ref = deps[member.refs[j]]
+            if (!ref) continue
             ppositions.push(ref.lon, ref.lat)
             coords.push(ref.lon, ref.lat)
           }
