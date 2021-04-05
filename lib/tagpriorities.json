@@ -44,7 +44,7 @@
   "railway.*": {
     "priority": 95
   },
-  "routes.*": {
+  "route.*": {
     "priority": 7
   },
   "sport.*": {
