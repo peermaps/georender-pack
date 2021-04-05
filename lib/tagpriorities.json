@@ -1,18 +1,18 @@
 {
   "aerialway.cable_car": {
-    "priority": 100
+    "priority": 97
   },
   "aerialway.chair_lift": {
-    "priority": 100
+    "priority": 96
   },
   "aeroway.aerodrome": {
-    "priority": 100
+    "priority": 98
   },
   "amenity.*": {
     "priority": 60
   },
   "amenity.university": {
-    "priority": 100
+    "priority": 99
   },
   "boundary.*": {
     "priority": 5
@@ -20,35 +20,32 @@
   "building.*": {
     "priority": 20
   },
-  "building.yes": {
-    "priority": 20
-  },
   "craft.*": {
-    "priority": 10
+    "priority": 8
   },
   "landuse.*": {
     "priority": 10
   },
   "man_made.lighthouse": {
-    "priority": 70
+    "priority": 85
   },
   "military.*": {
     "priority": 70
   },
   "place.*": {
-    "priority": 10
+    "priority": 9
   },
   "power.*": {
     "priority": 100
   },
   "public_transport.*": {
-    "priority": 50
+    "priority": 51
   },
   "railway.*": {
-    "priority": 100
+    "priority": 95
   },
   "routes.*": {
-    "priority": 10
+    "priority": 7
   },
   "sport.*": {
     "priority": 1
