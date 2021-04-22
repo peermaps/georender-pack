@@ -3,16 +3,34 @@ var features = require('./features.json')
 var osmIsArea = require('osm-is-area')
 var varint = require('varint')
 var sortMembers = require('./lib/sort.js')
+var tagPriorities = require('./lib/tagpriorities.json')
 
 module.exports = function (item, deps) {
   var type = features['place.other']
-  if (Object.keys(item.tags).length !== 0){
-    var tags = Object.entries(item.tags)
-    tags.forEach(function (tagPair) {
-      if (features[tagPair[0] + '.' + tagPair[1]] !== undefined) {
-        type = features[tagPair[0] + '.' + tagPair[1]]
+  var tags = Object.entries(item.tags)
+  if(tags.length !== 0){
+    var arr = []
+    var priorities = []
+    for (var i=0; i<tags.length; i++) {
+      if (features[tags[i][0] + '.' + tags[i][1]] !== undefined) {
+        type = features[tags[i][0] + '.' + tags[i][1]]
+        arr.push(tags[i][0] + '.' + tags[i][1])
       }
-    })
+    }
+    if (arr.length > 1) {
+      arr.sort()
+      for (var j=0; j<arr.length; j++) {
+        if (tagPriorities[arr[j]] && tagPriorities[arr[j]].priority) {
+          priorities.push(tagPriorities[arr[j]].priority)
+        }
+        else if (tagPriorities[arr[j].split('.')[0]+'.*'] &&
+          tagPriorities[arr[j].split('.')[0]+'.*'].priority) {
+            priorities.push(tagPriorities[arr[j].split('.')[0]+'.*'].priority)
+        }
+        else priorities.push(50)
+      }
+      type = features[arr[priorities.indexOf(Math.max(...priorities))]]
+    }
   }
   var id = item.id
 
@@ -35,11 +53,18 @@ module.exports = function (item, deps) {
     writeLabelData(item.tags, buf, offset)
   }
   if (item.type === 'way') {
+    for (var i=0; i<item.refs.length; i++) {
+      if (!deps[item.refs[i]]) {
+        var buf = Buffer.alloc(0)
+        return
+      }
+    }
     if (osmIsArea(item)) {
       var typeLen = varint.encodingLength(type)
       var idLen = varint.encodingLength(id)
       var coords = []
       for (var i=0; i<item.refs.length; i++) {
+        if (!deps[item.refs[i]]) continue
         coords.push(deps[item.refs[i]].lon)
         coords.push(deps[item.refs[i]].lat) 
       }
@@ -79,6 +104,7 @@ module.exports = function (item, deps) {
       var idLen = varint.encodingLength(id)
       var coords = []
       for (var i=0; i<item.refs.length; i++) {
+        if (!deps[item.refs[i]]) continue
         coords.push(deps[item.refs[i]].lon)
         coords.push(deps[item.refs[i]].lat) 
       }
@@ -115,14 +141,36 @@ module.exports = function (item, deps) {
       var ppositions = []
       var closed = false
       var ref0 = -1
-      var smembers = sortMembers(item.members, deps, item.id)
+      var members = item.members.slice()
+      if (item.members[0].role === "inner") {
+        var outerStart
+        var outerEnd = members.length
+        for (var i=0; i<item.members.length; i++) {
+          if (item.members[i].role === 'outer') {
+            outerStart = i
+            break
+          }
+        }
+        for (; i<item.members.length; i++) {
+          if (item.members[i].role !== 'outer') {
+            outerEnd = i
+            break
+          }
+        }
+        var outers = members.splice(outerStart, outerEnd-outerStart)
+        var sargs = [0,0]
+        sargs.push.apply(sargs, outers)
+        members.splice.apply(members, sargs)
+      }
+      var smembers = sortMembers(members, deps, item.id)
       /* generate deps for test cases
       var test = {}
-      if (item.id === 9063063) {
+      if (item.id === 9168008) {
         for (var i=0; i<item.members.length; i++) {
-          if (!deps[item.members[i].id]) console.error(item.members[i].id)
+          //if (!deps[item.members[i].id]) console.error(item.members[i].id)
           test[item.members[i].id] = deps[item.members[i].id]
         }
+        console.error(JSON.stringify(test, null, 2))
       }
       */
       for (var i=0; i<smembers.length; i++) {
@@ -149,6 +197,7 @@ module.exports = function (item, deps) {
             }
             if (ref0 < 0) { ref0 = member.refs[j] }
             var ref = deps[member.refs[j]]
+            if (!ref) continue
             ppositions.push(ref.lon, ref.lat)
             coords.push(ref.lon, ref.lat)
           }
@@ -168,6 +217,7 @@ module.exports = function (item, deps) {
               holes.push(ppositions.length/2)
             }
             var ref = deps[member.refs[j]]
+            if (!ref) continue
             ppositions.push(ref.lon, ref.lat)
             coords.push(ref.lon, ref.lat)
           }
