@@ -1,5 +1,5 @@
 var earcut = require('earcut')
-var featuresJSON = require('./features')
+var featuresJSON = require('./features.json')
 var osmIsArea = require('osm-is-area')
 var varint = require('varint')
 var sortMembers = require('./lib/sort.js')
