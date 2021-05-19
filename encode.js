@@ -1,9 +1,14 @@
 var earcut = require('earcut')
-var features = require('./features.json')
+var featuresJSON = require('./features.json')
 var osmIsArea = require('osm-is-area')
 var varint = require('varint')
 var sortMembers = require('./lib/sort.js')
 var tagPriorities = require('./lib/tagpriorities.json')
+
+var features = {}
+for (var i=0; i<featuresJSON.length; i++) {
+  features[featuresJSON[i]] = i
+}
 
 module.exports = function (item, deps) {
   var type = features['place.other']
