@@ -5,7 +5,7 @@ module.exports = function (buffers) {
   var sizes = {
     point: { types: 0, ids: 0, positions: 0 },
     line: { types: 0, ids: 0, positions: 0, normals: 0 },
-    area: { types: 0, ids: 0, positions: 0, cells: 0 }
+    area: { types: 0, ids: 0, positions: 0, normals: 0, cells: 0 }
   }
   buffers.forEach(function (buf) {
     if (buf.length === 0) return
@@ -36,9 +36,10 @@ module.exports = function (buffers) {
       var plen = varint.decode(buf, offset) //pcount
       offset+=varint.decode.bytes
       offset+=plen*8
-      sizes.area.types+=plen
-      sizes.area.ids+=plen*2
-      sizes.area.positions+=plen*2
+      sizes.area.types+=plen*2+2
+      sizes.area.ids+=plen*2+2
+      sizes.area.positions+=plen*4+4
+      sizes.line.normals+=plen*4+4
       var clen = varint.decode(buf, offset) //clen
       offset+=varint.decode.bytes
       sizes.area.cells+=clen*3
@@ -65,6 +66,7 @@ module.exports = function (buffers) {
       //ids: new Float32Array(sizes.area.ids),
       ids: Array(sizes.area.ids.length).fill(0),
       positions: new Float32Array(sizes.area.positions),
+      normals: new Float32Array(sizes.line.normals),
       cells: new Uint32Array(sizes.area.cells),
       labels: {}
     }
@@ -72,7 +74,7 @@ module.exports = function (buffers) {
   var offsets = {
     point: { types: 0, ids: 0, positions: 0, labels: 0 },
     line: { types: 0, ids: 0, positions: 0, normals: 0, labels: 0 },
-    area: { types: 0, ids: 0, positions: 0, cells: 0, labels: 0 }
+    area: { types: 0, ids: 0, positions: 0, normals: 0, cells: 0, labels: 0 }
   }
   var pindex = 0
   buffers.forEach(function (buf) {
@@ -150,6 +152,11 @@ module.exports = function (buffers) {
       offset+=varint.decode.bytes
       var plen = varint.decode(buf, offset)
       offset+=varint.decode.bytes
+      var positions = []
+      var lon, lat
+      data.area.types[offsets.area.types++] = type
+      data.area.ids[offsets.area.ids++] = id
+      /*
       for (var i=0; i<plen; i++) {
         data.area.types[offsets.area.types++] = type
         data.area.ids[offsets.area.ids++] = id
@@ -158,6 +165,46 @@ module.exports = function (buffers) {
         data.area.positions[offsets.area.positions++] = buf.readFloatLE(offset)
         offset+=4
       }
+      */
+      for (var i=0; i<plen; i++) {
+        data.area.types[offsets.area.types++] = type
+        data.area.types[offsets.area.types++] = type
+        data.area.ids[offsets.area.ids++] = id
+        data.area.ids[offsets.area.ids++] = id
+        lon = buf.readFloatLE(offset)
+        offset+=4
+        lat = buf.readFloatLE(offset)
+        offset+=4
+        if (i === 0) {
+          data.area.positions[offsets.area.positions++] = lon
+          data.area.positions[offsets.area.positions++] = lat
+        }
+        data.area.positions[offsets.area.positions++] = lon
+        data.area.positions[offsets.area.positions++] = lat
+        data.area.positions[offsets.area.positions++] = lon
+        data.area.positions[offsets.area.positions++] = lat
+        positions.push([lon, lat])
+      }
+      data.area.types[offsets.area.types++] = type
+      data.area.ids[offsets.area.ids++] = id
+      data.area.positions[offsets.area.positions++] = lon
+      data.area.positions[offsets.area.positions++] = lat
+
+      var normals = getNormals(positions)
+      var scale = Math.sqrt(normals[0][1])
+      data.area.normals[offsets.area.normals++] = normals[0][0][0]*scale
+      data.area.normals[offsets.area.normals++] = normals[0][0][1]*scale
+      for (var i=0; i<normals.length; i++) {
+        scale = Math.sqrt(normals[i][1])
+        data.area.normals[offsets.area.normals++] = normals[i][0][0]*scale
+        data.area.normals[offsets.area.normals++] = normals[i][0][1]*scale
+        data.area.normals[offsets.area.normals++] = -1*normals[i][0][0]*scale
+        data.area.normals[offsets.area.normals++] = -1*normals[i][0][1]*scale
+      }
+      var normOffset = offsets.area.normals
+      data.area.normals[offsets.area.normals++] = data.area.normals[normOffset-2]
+      data.area.normals[offsets.area.normals++] = data.area.normals[normOffset-1]
+
       var clen = varint.decode(buf, offset)
       offset+=varint.decode.bytes
       for (var i=0; i<clen; i++) {
