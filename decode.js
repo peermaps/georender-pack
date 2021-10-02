@@ -176,13 +176,13 @@ module.exports = function (buffers) {
 }
 
 function decodeLabels (buf, offset, data, id) {
-  data.labels[id] = []
   do {
     var labelLength = varint.decode(buf, offset)
     if (labelLength === 0) continue
     offset+=varint.decode.bytes
     var labelData = buf.slice(offset, offset+labelLength)
     offset+=labelLength
+    if (!data.labels[id]) data.labels[id] = []
     data.labels[id].push(labelData.toString())
   } while (labelLength > 0)
   return offset
