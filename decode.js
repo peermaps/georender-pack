@@ -1,5 +1,6 @@
 var getNormals = require('polyline-normals')
 var varint = require('varint')
+var makeEdgeGraph = require('./lib/makeEdgeGraph.js')
 
 module.exports = function (buffers) {
   var sizes = {
@@ -164,25 +165,25 @@ module.exports = function (buffers) {
       offset+=varint.decode.bytes
       var positions = []
       var lon, lat
-      data.areaBorder.types[offsets.areaBorder.types++] = type
-      data.areaBorder.ids[offsets.areaBorder.ids++] = id
       for (var i=0; i<plen; i++) {
         lon = buf.readFloatLE(offset)
+        offset+=4
+        lat = buf.readFloatLE(offset)
         data.area.types[offsets.area.types++] = type
         data.area.ids[offsets.area.ids++] = id
         data.area.positions[offsets.area.positions++] = lon
-        data.areaBorder.types[offsets.areaBorder.types++] = type
-        data.areaBorder.types[offsets.areaBorder.types++] = type
-        data.areaBorder.ids[offsets.areaBorder.ids++] = id
-        data.areaBorder.ids[offsets.areaBorder.ids++] = id
-        offset+=4
-        lat = buf.readFloatLE(offset)
         data.area.positions[offsets.area.positions++] = lat
         offset+=4
         if (i === 0) {
+          data.areaBorder.types[offsets.areaBorder.types++] = type
+          data.areaBorder.ids[offsets.areaBorder.ids++] = id
           data.areaBorder.positions[offsets.areaBorder.positions++] = lon
           data.areaBorder.positions[offsets.areaBorder.positions++] = lat
         }
+        data.areaBorder.types[offsets.areaBorder.types++] = type
+        data.areaBorder.types[offsets.areaBorder.types++] = type
+        data.areaBorder.ids[offsets.areaBorder.ids++] = id
+        data.areaBorder.ids[offsets.areaBorder.ids++] = id
         data.areaBorder.positions[offsets.areaBorder.positions++] = lon
         data.areaBorder.positions[offsets.areaBorder.positions++] = lat
         data.areaBorder.positions[offsets.areaBorder.positions++] = lon
@@ -211,14 +212,23 @@ module.exports = function (buffers) {
 
       var clen = varint.decode(buf, offset)
       offset+=varint.decode.bytes
+      var cells = []
       for (var i=0; i<clen; i++) {
-        data.area.cells[offsets.area.cells++] = varint.decode(buf, offset) + pindex
+        var c0 = varint.decode(buf, offset) + pindex
+        data.area.cells[offsets.area.cells++] = c0
+        cells.push(c0)
         offset+=varint.decode.bytes
-        data.area.cells[offsets.area.cells++] = varint.decode(buf, offset) + pindex
+        var c1 = varint.decode(buf, offset) + pindex
+        data.area.cells[offsets.area.cells++] = c1
+        cells.push(c1)
         offset+=varint.decode.bytes
-        data.area.cells[offsets.area.cells++] = varint.decode(buf, offset) + pindex
+        var c2 = varint.decode(buf, offset) + pindex
+        data.area.cells[offsets.area.cells++] = c2
+        cells.push(c2)
         offset+=varint.decode.bytes
       }
+      var edgeGraph = makeEdgeGraph(cells)
+      console.log(edgeGraph)
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
     }
