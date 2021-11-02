@@ -174,61 +174,62 @@ module.exports = function (buffers) {
         data.area.positions[offsets.area.positions++] = lon
         data.area.positions[offsets.area.positions++] = lat
         offset+=4
-        if (i === 0) {
-          data.areaBorder.types[offsets.areaBorder.types++] = type
-          data.areaBorder.ids[offsets.areaBorder.ids++] = id
-          data.areaBorder.positions[offsets.areaBorder.positions++] = lon
-          data.areaBorder.positions[offsets.areaBorder.positions++] = lat
-        }
-        data.areaBorder.types[offsets.areaBorder.types++] = type
-        data.areaBorder.types[offsets.areaBorder.types++] = type
-        data.areaBorder.ids[offsets.areaBorder.ids++] = id
-        data.areaBorder.ids[offsets.areaBorder.ids++] = id
-        data.areaBorder.positions[offsets.areaBorder.positions++] = lon
-        data.areaBorder.positions[offsets.areaBorder.positions++] = lat
-        data.areaBorder.positions[offsets.areaBorder.positions++] = lon
-        data.areaBorder.positions[offsets.areaBorder.positions++] = lat
         positions.push([lon, lat])
       }
-      data.areaBorder.types[offsets.areaBorder.types++] = type
-      data.areaBorder.ids[offsets.areaBorder.ids++] = id
-      data.areaBorder.positions[offsets.areaBorder.positions++] = lon
-      data.areaBorder.positions[offsets.areaBorder.positions++] = lat
-
-      var normals = getNormals(positions)
-      var scale = Math.sqrt(normals[0][1])
-      data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][0]*scale
-      data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][1]*scale
-      for (var i=0; i<normals.length; i++) {
-        scale = Math.sqrt(normals[i][1])
-        data.areaBorder.normals[offsets.areaBorder.normals++] = normals[i][0][0]*scale
-        data.areaBorder.normals[offsets.areaBorder.normals++] = normals[i][0][1]*scale
-        data.areaBorder.normals[offsets.areaBorder.normals++] = -1*normals[i][0][0]*scale
-        data.areaBorder.normals[offsets.areaBorder.normals++] = -1*normals[i][0][1]*scale
-      }
-      var normOffset = offsets.areaBorder.normals
-      data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset-2]
-      data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset-1]
-
       var clen = varint.decode(buf, offset)
       offset+=varint.decode.bytes
       var cells = []
       for (var i=0; i<clen; i++) {
-        var c0 = varint.decode(buf, offset) + pindex
-        data.area.cells[offsets.area.cells++] = c0
+        var c0 = varint.decode(buf, offset)
+        data.area.cells[offsets.area.cells++] = c0 + pindex
         cells.push(c0)
         offset+=varint.decode.bytes
-        var c1 = varint.decode(buf, offset) + pindex
-        data.area.cells[offsets.area.cells++] = c1
+        var c1 = varint.decode(buf, offset)
+        data.area.cells[offsets.area.cells++] = c1 + pindex
         cells.push(c1)
         offset+=varint.decode.bytes
-        var c2 = varint.decode(buf, offset) + pindex
-        data.area.cells[offsets.area.cells++] = c2
+        var c2 = varint.decode(buf, offset)
+        data.area.cells[offsets.area.cells++] = c2 + pindex
         cells.push(c2)
         offset+=varint.decode.bytes
       }
       var edgeGraph = makeEdgeGraph(cells)
-      console.log(edgeGraph)
+      //if (id === 905844241) console.log(cells)
+      //if (id === 895527115) console.log(edgeGraph)
+      var holeOffset = 0
+      for (var j=0; j<positions.length-1; j++) {
+        var a = j 
+        var b = j+1
+        var ab = a + ',' + b
+        if (edgeGraph[ab] && edgeGraph[ab] !==1 || j === positions.length-2) {
+          var pos = positions.slice(holeOffset, j)
+          var normals = getNormals(pos)
+          for (var k=0; k<pos.length-1; k++){
+            var scale = Math.sqrt(normals[k][1])
+            if (k === 0) {
+              data.areaBorder.types[offsets.areaBorder.types++] = type
+              data.areaBorder.ids[offsets.areaBorder.ids++] = id
+              data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0] 
+              data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
+              data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][0]*scale
+              data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][1]*scale
+            }
+            data.areaBorder.types[offsets.areaBorder.types++] = type
+            data.areaBorder.ids[offsets.areaBorder.ids++] = id
+            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0] 
+            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][1]
+            data.areaBorder.normals[offsets.areaBorder.normals++] = normals[k][0][0]*scale
+            data.areaBorder.normals[offsets.areaBorder.normals++] = -1*normals[k][0][1]*scale
+          }
+          data.areaBorder.types[offsets.areaBorder.types++] = type
+          data.areaBorder.ids[offsets.areaBorder.ids++] = id
+          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
+          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normals[0]]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normals[0]]
+          holeOffset++
+        }
+      }
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
     }
