@@ -194,16 +194,20 @@ module.exports = function (buffers) {
         offset+=varint.decode.bytes
       }
       var edgeGraph = makeEdgeGraph(cells)
-      //if (id === 905844241) console.log(cells)
-      //if (id === 895527115) console.log(edgeGraph)
-      var holeOffset = 0
+      //if (id === 895527115) console.log(edgeGraph) //solid
+      var start = 0
       for (var j=0; j<positions.length-1; j++) {
         var a = j 
         var b = j+1
         var ab = a + ',' + b
-        if (edgeGraph[ab] && edgeGraph[ab] !==1 || j === positions.length-2) {
-          var pos = positions.slice(holeOffset, j)
+        if (edgeGraph[ab] !==1 || j === positions.length-2) {
+          var pos = positions.slice(start, j+1)
+          pos.push(pos[0])
+          start = j+1
+          //if (id === 4196869) console.log(pos) //holey
+          if (pos.length === 0) continue
           var normals = getNormals(pos)
+          var startNorm = 0
           for (var k=0; k<pos.length-1; k++){
             var scale = Math.sqrt(normals[k][1])
             if (k === 0) {
@@ -211,23 +215,41 @@ module.exports = function (buffers) {
               data.areaBorder.ids[offsets.areaBorder.ids++] = id
               data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0] 
               data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
+              startNorm = offsets.areaBorder.normals
               data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][0]*scale
               data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][1]*scale
             }
             data.areaBorder.types[offsets.areaBorder.types++] = type
+            data.areaBorder.types[offsets.areaBorder.types++] = type
+            data.areaBorder.ids[offsets.areaBorder.ids++] = id
             data.areaBorder.ids[offsets.areaBorder.ids++] = id
             data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0] 
             data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][1]
+            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0] 
+            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][1]
             data.areaBorder.normals[offsets.areaBorder.normals++] = normals[k][0][0]*scale
-            data.areaBorder.normals[offsets.areaBorder.normals++] = -1*normals[k][0][1]*scale
+            data.areaBorder.normals[offsets.areaBorder.normals++] = normals[k][0][1]*scale
+            data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[k][0][0]*scale
+            data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[k][0][1]*scale
           }
           data.areaBorder.types[offsets.areaBorder.types++] = type
+          data.areaBorder.types[offsets.areaBorder.types++] = type
+          data.areaBorder.types[offsets.areaBorder.types++] = type
+          data.areaBorder.ids[offsets.areaBorder.ids++] = id
+          data.areaBorder.ids[offsets.areaBorder.ids++] = id
           data.areaBorder.ids[offsets.areaBorder.ids++] = id
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normals[0]]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normals[0]]
-          holeOffset++
+          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
+          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
+          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
+          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset+1]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset+1]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset+1]
         }
       }
       pindex+=plen
