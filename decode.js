@@ -193,6 +193,7 @@ module.exports = function (buffers) {
         cells.push(c2)
         offset+=varint.decode.bytes
       }
+      console.log(cells)
       var edgeGraph = makeEdgeGraph(cells)
       //if (id === 895527115) console.log(edgeGraph) //solid
       var start = 0
