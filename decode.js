@@ -175,6 +175,7 @@ module.exports = function (buffers) {
         data.area.positions[offsets.area.positions++] = lat
         offset+=4
         positions.push([lon, lat])
+        //if (id === 4196874) console.log([lon, lat])
       }
       var clen = varint.decode(buf, offset)
       offset+=varint.decode.bytes
@@ -193,22 +194,28 @@ module.exports = function (buffers) {
         cells.push(c2)
         offset+=varint.decode.bytes
       }
-      console.log(cells)
       var edgeGraph = makeEdgeGraph(cells)
+      //if (id === 4196869) positions.push([36.22951126098633, 50.00588607788086]) //holey
+      //if (id === 4196873) positions.push([36.22955322265625, 50.00543975830078])
       //if (id === 895527115) console.log(edgeGraph) //solid
+      //if (id === 4196887) {
+      //92407842 //E
+      //if (id === 92407842) console.log(positions, cells)
       var start = 0
       for (var j=0; j<positions.length-1; j++) {
         var a = j 
         var b = j+1
         var ab = a + ',' + b
-        if (edgeGraph[ab] !==1 || j === positions.length-2) {
+        if (ab !== '0,1' && edgeGraph[ab] !==1 || j === positions.length-2) {
           var pos = positions.slice(start, j+1)
-          pos.push(pos[0])
-          start = j+1
-          //if (id === 4196869) console.log(pos) //holey
           if (pos.length === 0) continue
+          pos.push(pos[0])
+          pos.push(pos[0])
+          if (id === 92407842) console.log('pos:', pos)
+          start = j+1
           var normals = getNormals(pos)
           var startNorm = 0
+          var propPos = []
           for (var k=0; k<pos.length-1; k++){
             var scale = Math.sqrt(normals[k][1])
             if (k === 0) {
@@ -216,6 +223,7 @@ module.exports = function (buffers) {
               data.areaBorder.ids[offsets.areaBorder.ids++] = id
               data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0] 
               data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
+              propPos.push(pos[0][0], pos[0][1])
               startNorm = offsets.areaBorder.normals
               data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][0]*scale
               data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][1]*scale
@@ -228,6 +236,8 @@ module.exports = function (buffers) {
             data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][1]
             data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0] 
             data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][1]
+            propPos.push(pos[k][0], pos[k][1])
+            propPos.push(pos[k][0], pos[k][1])
             data.areaBorder.normals[offsets.areaBorder.normals++] = normals[k][0][0]*scale
             data.areaBorder.normals[offsets.areaBorder.normals++] = normals[k][0][1]*scale
             data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[k][0][0]*scale
@@ -235,26 +245,24 @@ module.exports = function (buffers) {
           }
           data.areaBorder.types[offsets.areaBorder.types++] = type
           data.areaBorder.types[offsets.areaBorder.types++] = type
-          data.areaBorder.types[offsets.areaBorder.types++] = type
-          data.areaBorder.ids[offsets.areaBorder.ids++] = id
           data.areaBorder.ids[offsets.areaBorder.ids++] = id
           data.areaBorder.ids[offsets.areaBorder.ids++] = id
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
-          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
-          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
+          propPos.push(pos[0][0], pos[0][1])
+          propPos.push(pos[0][0], pos[0][1])
           data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset]
           data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset+1]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset+1]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset+1]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset+1]
         }
       }
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
+      //if (id === 4196869) console.log(propPos)
+      if (id === 92407842) console.log(propPos)
     }
   })
   return data
