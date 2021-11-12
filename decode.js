@@ -206,12 +206,13 @@ module.exports = function (buffers) {
         var a = j 
         var b = j+1
         var ab = a + ',' + b
-        if (ab !== '0,1' && edgeGraph[ab] !==1 || j === positions.length-2) {
-          var pos = positions.slice(start, j+1)
+        if ((ab !== '0,1' && edgeGraph[ab] !==1) || j === positions.length-2) {
+          var pos = positions.slice(start, j+2)
           if (pos.length === 0) continue
+          //if (id !== 4196869*3+2 && id !== 4196887*3+2 && id !== 2079658*3+2) continue
+          if (id === 1328370652) console.log('j:', j, 'pos:', pos) //sq
+          //if (id === 4196869*3+2) console.log('j:', j, 'pos:', pos) //inner wood
           pos.push(pos[0])
-          pos.push(pos[0])
-          if (id === 92407842) console.log('pos:', pos)
           start = j+1
           var normals = getNormals(pos)
           var startNorm = 0
@@ -261,8 +262,7 @@ module.exports = function (buffers) {
       }
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
-      //if (id === 4196869) console.log(propPos)
-      if (id === 92407842) console.log(propPos)
+      if (id === 1328370652) console.log('propPos:', propPos, 'positions:', positions)
     }
   })
   return data
