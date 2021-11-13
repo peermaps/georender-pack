@@ -202,16 +202,19 @@ module.exports = function (buffers) {
       //92407842 //E
       //if (id === 92407842) console.log(positions, cells)
       var start = 0
-      for (var j=0; j<positions.length-1; j++) {
+      for (var j=0; j<positions.length; j++) {
         var a = j 
-        var b = j+1
+        var b = (j+1)%positions.length
         var ab = a + ',' + b
-        if ((ab !== '0,1' && edgeGraph[ab] !==1) || j === positions.length-2) {
-          var pos = positions.slice(start, j+2)
+        if ((ab !== '0,1' && edgeGraph[ab] !==1) || j === positions.length-1) {
+          var pos = positions.slice(start, j+1)
           if (pos.length === 0) continue
           //if (id !== 4196869*3+2 && id !== 4196887*3+2 && id !== 2079658*3+2) continue
-          if (id === 1328370652) console.log('j:', j, 'pos:', pos) //sq
-          //if (id === 4196869*3+2) console.log('j:', j, 'pos:', pos) //inner wood
+          if (id === 4196889*3+2) {
+            //console.log('j:', j, 'pos:', pos)
+            continue
+          }
+          if (id === 4196869*3+2) console.log('j:', j, 'pos:', pos) //wood with hole
           pos.push(pos[0])
           start = j+1
           var normals = getNormals(pos)
@@ -254,15 +257,15 @@ module.exports = function (buffers) {
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
           propPos.push(pos[0][0], pos[0][1])
           propPos.push(pos[0][0], pos[0][1])
-          data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset+1]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = -data.areaBorder.normals[normOffset+1]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset+1]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset]
+          data.areaBorder.normals[offsets.areaBorder.normals++] = data.areaBorder.normals[normOffset+1]
         }
       }
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
-      if (id === 1328370652) console.log('propPos:', propPos, 'positions:', positions)
+      if (id === 4196869*3+2) console.log('propPos:', propPos, 'positions:', positions)
     }
   })
   return data
