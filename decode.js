@@ -36,7 +36,7 @@ module.exports = function (buffers) {
       varint.decode(buf, offset) //id
       offset+=varint.decode.bytes
       var plen = varint.decode(buf, offset) //pcount
-      var plenAB = plen*1.2
+      var plenAB = plen*1.1
       offset+=varint.decode.bytes
       offset+=plen*8
       sizes.area.types+=plen
@@ -205,6 +205,27 @@ module.exports = function (buffers) {
           start = j+1
           var normals = getNormals(pos, true)
           var startNorm = 0
+          //change 51 to number of times pen picks up * pos.length
+          // copy everything in k loop but everywhere you do positions++, do
+          // counter++ to get value for above
+          if (offsets.areaBorder.positions + pos.length + 51 >= data.areaBorder.positions.length) {
+            var ndataTypes = new Float32Array(data.areaBorder.types.length*1.2)
+            for (var k=0; k<data.areaBorder.types.length; k++) {
+              ndataTypes[k] = data.areaBorder.types[k]
+            }
+            data.areaBorder.types = ndataTypes
+            var ndataPos = new Float32Array(data.areaBorder.positions.length*1.2)
+            for (var k=0; k<data.areaBorder.positions.length; k++) {
+              ndataPos[k] = data.areaBorder.positions[k]
+            }
+            data.areaBorder.positions = ndataPos
+            var ndataNorms = new Float32Array(data.areaBorder.normals.length*1.2)
+            for (var k=0; k<data.areaBorder.normals.length; k++) {
+              ndataNorms[k] = data.areaBorder.normals[k]
+            }
+            data.areaBorder.normals = ndataNorms
+            console.log('oops')
+          }
           for (var k=0; k<pos.length; k++){
             var scale = Math.sqrt(normals[k][1])
             if (k === 0) {
@@ -271,6 +292,9 @@ module.exports = function (buffers) {
       offset = decodeLabels(buf, offset, data.area, id)
     }
   })
+  data.areaBorder.positions = data.areaBorder.positions.subarray(0, offsets.areaBorder.positions)
+  data.areaBorder.normals = data.areaBorder.normals.subarray(0, offsets.areaBorder.normals)
+  console.log(data.areaBorder.positions)
   return data
 }
 
