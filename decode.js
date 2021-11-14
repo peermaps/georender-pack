@@ -192,18 +192,9 @@ module.exports = function (buffers) {
         offset+=varint.decode.bytes
       }
       var edgeGraph = makeEdgeGraph(cells)
-      //if (id === 4196869) positions.push([36.22951126098633, 50.00588607788086]) //holey
-      //if (id === 4196873) positions.push([36.22955322265625, 50.00543975830078])
-      //if (id === 895527115) console.log(edgeGraph) //solid
-      //if (id === 4196887) {
-      //92407842 //E
-      //if (id === 92407842) console.log(positions, cells)
-      //4196869 //wood with hole
-      //1558382 //derzhprom
       var start = 0
       var propPos = []
       var propNorms = []
-      var posCount = 0
       for (var j=0; j<positions.length; j++) {
         var a = j 
         var b = (j+1)%positions.length
@@ -211,10 +202,6 @@ module.exports = function (buffers) {
         if ((ab !== '0,1' && edgeGraph[ab] !==1) || j === positions.length-1) {
           var pos = positions.slice(start, j+1)
           if (pos.length === 0) continue
-          if (id === 4196889*3+2) { continue }
-          //if (id !== 4196869*3+2 && id !== 4196887*3+2 && id !== 2079658*3+2) continue
-          //if (id === 442790217*3+1) { console.log('j:', j, 'pos:', pos) } //sq
-          //if (id === 4196869*3+2) console.log('j:', j, 'pos:', pos)
           start = j+1
           var normals = getNormals(pos, true)
           var startNorm = 0
@@ -278,14 +265,10 @@ module.exports = function (buffers) {
           propNorms.push(-normals[0][0][1]*scale) 
           propNorms.push(-normals[0][0][0]*scale)
           propNorms.push(-normals[0][0][1]*scale) 
-          posCount += 1
         }
       }
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
-      if (id === 4196869*3+2) {
-        //console.log('propPos:', propPos, 'positions:', positions, 'propNorms:', propNorms)
-      }
     }
   })
   return data
