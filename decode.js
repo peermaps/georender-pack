@@ -7,7 +7,8 @@ module.exports = function (buffers) {
     point: { types: 0, ids: 0, positions: 0 },
     line: { types: 0, ids: 0, positions: 0, normals: 0 },
     area: { types: 0, ids: 0, positions: 0, cells: 0 },
-    areaBorder: { types: 0, ids: 0, positions: 0, normals: 0 }
+    areaBorder: { types: 0, ids: 0, positions: 0, normals: 0 },
+    areaEdges: { types: 0, ids: 0, positions: 0, cells: 0, edges: 0 }
   }
   buffers.forEach(function (buf) {
     if (buf.length === 0) return
@@ -50,6 +51,22 @@ module.exports = function (buffers) {
       offset+=varint.decode.bytes
       sizes.area.cells+=clen*3
     }
+    else if (featureType === 4) {
+      varint.decode(buf, offset) //types
+      offset+=varint.decode.bytes
+      varint.decode(buf, offset) //id
+      offset+=varint.decode.bytes
+      var plen = varint.decode(buf, offset) //pcount
+      sizes.areaEdges.types+=plen
+      sizes.areaEdges.ids+=plen*2
+      sizes.areaEdges.positions+=plen*2
+      var clen = varint.decode(buf, offset) //clen
+      offset+=varint.decode.bytes
+      sizes.areaEdges.cells+=clen*3
+      var elen = varint.decode(buf, offset) //elen
+      offset+=varint.decode.bytes
+      sizes.areaEdges.edges+=elen*2
+    }
   })
   var data = {
     point: {
@@ -77,13 +94,22 @@ module.exports = function (buffers) {
       ids: Array(sizes.areaBorder.ids.length).fill(0),
       positions: new Float32Array(sizes.areaBorder.positions),
       normals: new Float32Array(sizes.areaBorder.normals)
-    }
+    },
+    areaEdge: {
+      types: new Float32Array(sizes.areaEdges.types),
+      ids: Array(sizes.areaEdges.ids.length).fill(0),
+      positions: new Float32Array(sizes.areaEdges.positions),
+      cells: new Uint32Array(sizes.areaEdges.cells),
+      edges: new Uint32Array(sizes.areaEdges.edges),
+      labels: {}
+    },
   }
   var offsets = {
     point: { types: 0, ids: 0, positions: 0, labels: 0 },
     line: { types: 0, ids: 0, positions: 0, normals: 0, labels: 0 },
     area: { types: 0, ids: 0, positions: 0, cells: 0, labels: 0 },
-    areaBorder: { types: 0, ids: 0, positions: 0, normals: 0 }
+    areaBorder: { types: 0, ids: 0, positions: 0, normals: 0 },
+    areaEdge: { types: 0, ids: 0, positions: 0, cells: 0, edges: 0, labels: 0 }
   }
   var pindex = 0
   buffers.forEach(function (buf) {
@@ -193,10 +219,8 @@ module.exports = function (buffers) {
       }
       var edgeGraph = makeEdgeGraph(cells)
       var start = 0
-      var propPos = []
-      var propNorms = []
       for (var j=0; j<positions.length; j++) {
-        var a = j 
+        var a = j
         var b = (j+1)%positions.length
         var ab = a + ',' + b
         if ((ab !== '0,1' && edgeGraph[ab] !==1) || j === positions.length-1) {
@@ -205,10 +229,8 @@ module.exports = function (buffers) {
           start = j+1
           var normals = getNormals(pos, true)
           var startNorm = 0
-
           var positionsCount = 2+6+(4*pos.length)
 
-          //change 51 to number of times pen picks up * pos.length
           if (offsets.areaBorder.positions + pos.length + positionsCount >= data.areaBorder.positions.length) {
             var ndataTypes = new Float32Array(data.areaBorder.types.length*1.2)
             for (var k=0; k<data.areaBorder.types.length; k++) {
@@ -232,33 +254,24 @@ module.exports = function (buffers) {
             if (k === 0) {
               data.areaBorder.types[offsets.areaBorder.types++] = type
               data.areaBorder.ids[offsets.areaBorder.ids++] = id
-              data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0] 
+              data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
               data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
-              propPos.push(pos[0][0], pos[0][1])
               startNorm = offsets.areaBorder.normals
               data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][0]*scale
               data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][1]*scale
-              propNorms.push(normals[0][0][0]*scale)
-              propNorms.push(normals[0][0][1]*scale)
             }
             data.areaBorder.types[offsets.areaBorder.types++] = type
             data.areaBorder.types[offsets.areaBorder.types++] = type
             data.areaBorder.ids[offsets.areaBorder.ids++] = id
             data.areaBorder.ids[offsets.areaBorder.ids++] = id
-            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0] 
+            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0]
             data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][1]
-            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0] 
+            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0]
             data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][1]
-            propPos.push(pos[k][0], pos[k][1])
-            propPos.push(pos[k][0], pos[k][1])
             data.areaBorder.normals[offsets.areaBorder.normals++] = normals[k][0][0]*scale
             data.areaBorder.normals[offsets.areaBorder.normals++] = normals[k][0][1]*scale
             data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[k][0][0]*scale
             data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[k][0][1]*scale
-            propNorms.push(normals[k][0][0]*scale)
-            propNorms.push(normals[k][0][1]*scale)
-            propNorms.push(-normals[k][0][0]*scale)
-            propNorms.push(-normals[k][0][1]*scale)
           }
           data.areaBorder.types[offsets.areaBorder.types++] = type
           data.areaBorder.types[offsets.areaBorder.types++] = type
@@ -272,29 +285,67 @@ module.exports = function (buffers) {
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
           data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
-          propPos.push(pos[0][0], pos[0][1])
-          propPos.push(pos[0][0], pos[0][1])
-          propPos.push(pos[0][0], pos[0][1])
           data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][0]*scale
           data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][1]*scale
           data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[0][0][0]*scale
           data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[0][0][1]*scale
           data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[0][0][0]*scale
           data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[0][0][1]*scale
-          propNorms.push(normals[0][0][0]*scale)
-          propNorms.push(normals[0][0][1]*scale) 
-          propNorms.push(-normals[0][0][0]*scale)
-          propNorms.push(-normals[0][0][1]*scale) 
-          propNorms.push(-normals[0][0][0]*scale)
-          propNorms.push(-normals[0][0][1]*scale) 
         }
       }
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
     }
+    else if (featureType === 4) {
+      var type = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
+      var id = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
+      var plen = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
+      var positions = []
+      var lon, lat
+      for (var i=0; i<plen; i++) {
+        lon = buf.readFloatLE(offset)
+        offset+=4
+        lat = buf.readFloatLE(offset)
+        data.areaEdge.types[offsets.areaEdges.types++] = type
+        data.areaEdge.ids[offsets.areaEdges.ids++] = id
+        data.areaEdge.positions[offsets.areaEdges.positions++] = lon
+        data.areaEdge.positions[offsets.areaEdges.positions++] = lat
+        offset+=4
+        positions.push([lon, lat])
+      }
+      var clen = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
+      var cells = []
+      for (var i=0; i<clen; i++) {
+        var c0 = varint.decode(buf, offset)
+        data.areaEdge.cells[offsets.areaEdge.cells++] = c0 + pindex
+        cells.push(c0)
+        offset+=varint.decode.bytes
+        var c1 = varint.decode(buf, offset)
+        data.areaEdge.cells[offsets.areaEdge.cells++] = c1 + pindex
+        cells.push(c1)
+        offset+=varint.decode.bytes
+        var c2 = varint.decode(buf, offset)
+        data.areaEdge.cells[offsets.areaEdge.cells++] = c2 + pindex
+        cells.push(c2)
+        offset+=varint.decode.bytes
+      }
+      var edges = []
+      for (var i=0; i<elen; i++) {
+        var e0 = varint.decode(buf, offset)
+        data.areaEdge.edges[offsets.areaEdge.edges++] = e0 + pindex
+        edges.push(c0)
+        offset+=varint.decode.bytes
+        var e1 = varint.decode(buf, offset)
+        data.areaEdge.edges[offsets.areaEdge.edges++] = e1 + pindex
+        edges.push(c1)
+        offset+=varint.decode.bytes
+      }
+    }
   })
-  data.areaBorder.positions = data.areaBorder.positions.subarray(0, offsets.areaBorder.positions)
-  data.areaBorder.normals = data.areaBorder.normals.subarray(0, offsets.areaBorder.normals)
   return data
 }
 
