@@ -8,7 +8,6 @@ module.exports = function (buffers) {
     line: { types: 0, ids: 0, positions: 0, normals: 0 },
     area: { types: 0, ids: 0, positions: 0, cells: 0 },
     areaBorder: { types: 0, ids: 0, positions: 0, normals: 0 },
-    areaEdges: { types: 0, ids: 0, positions: 0, cells: 0, edges: 0 }
   }
   buffers.forEach(function (buf) {
     if (buf.length === 0) return
@@ -37,16 +36,15 @@ module.exports = function (buffers) {
       varint.decode(buf, offset) //id
       offset+=varint.decode.bytes
       var plen = varint.decode(buf, offset) //pcount
-      var plenAB = plen
       offset+=varint.decode.bytes
       offset+=plen*8
       sizes.area.types+=plen
       sizes.area.ids+=plen*2
       sizes.area.positions+=plen*2
-      sizes.areaBorder.types+=plenAB*2+2
-      sizes.areaBorder.ids+=plenAB*2+2
-      sizes.areaBorder.positions+=plenAB*4+4
-      sizes.areaBorder.normals+=plenAB*4+4
+      sizes.areaBorder.types+=plen*2+2
+      sizes.areaBorder.ids+=plen*2+2
+      sizes.areaBorder.positions+=plen*4+4
+      sizes.areaBorder.normals+=plen*4+4
       var clen = varint.decode(buf, offset) //clen
       offset+=varint.decode.bytes
       sizes.area.cells+=clen*3
@@ -57,15 +55,16 @@ module.exports = function (buffers) {
       varint.decode(buf, offset) //id
       offset+=varint.decode.bytes
       var plen = varint.decode(buf, offset) //pcount
-      sizes.areaEdges.types+=plen
-      sizes.areaEdges.ids+=plen*2
-      sizes.areaEdges.positions+=plen*2
+      offset+=varint.decode.bytes
+      offset+=plen*8
+      sizes.area.types+=plen
+      sizes.area.ids+=plen*2
+      sizes.area.positions+=plen*2
       var clen = varint.decode(buf, offset) //clen
       offset+=varint.decode.bytes
-      sizes.areaEdges.cells+=clen*3
+      sizes.area.cells+=clen*3
       var elen = varint.decode(buf, offset) //elen
       offset+=varint.decode.bytes
-      sizes.areaEdges.edges+=elen*2
     }
   })
   var data = {
@@ -95,21 +94,12 @@ module.exports = function (buffers) {
       positions: new Float32Array(sizes.areaBorder.positions),
       normals: new Float32Array(sizes.areaBorder.normals)
     },
-    areaEdge: {
-      types: new Float32Array(sizes.areaEdges.types),
-      ids: Array(sizes.areaEdges.ids.length).fill(0),
-      positions: new Float32Array(sizes.areaEdges.positions),
-      cells: new Uint32Array(sizes.areaEdges.cells),
-      edges: new Uint32Array(sizes.areaEdges.edges),
-      labels: {}
-    },
   }
   var offsets = {
     point: { types: 0, ids: 0, positions: 0, labels: 0 },
     line: { types: 0, ids: 0, positions: 0, normals: 0, labels: 0 },
     area: { types: 0, ids: 0, positions: 0, cells: 0, labels: 0 },
     areaBorder: { types: 0, ids: 0, positions: 0, normals: 0 },
-    areaEdge: { types: 0, ids: 0, positions: 0, cells: 0, edges: 0, labels: 0 }
   }
   var pindex = 0
   buffers.forEach(function (buf) {
@@ -303,47 +293,36 @@ module.exports = function (buffers) {
       offset+=varint.decode.bytes
       var plen = varint.decode(buf, offset)
       offset+=varint.decode.bytes
-      var positions = []
       var lon, lat
       for (var i=0; i<plen; i++) {
         lon = buf.readFloatLE(offset)
         offset+=4
         lat = buf.readFloatLE(offset)
-        data.areaEdge.types[offsets.areaEdges.types++] = type
-        data.areaEdge.ids[offsets.areaEdges.ids++] = id
-        data.areaEdge.positions[offsets.areaEdges.positions++] = lon
-        data.areaEdge.positions[offsets.areaEdges.positions++] = lat
+        data.area.types[offsets.area.types++] = type
+        data.area.ids[offsets.area.ids++] = id
+        data.area.positions[offsets.area.positions++] = lon
+        data.area.positions[offsets.area.positions++] = lat
         offset+=4
-        positions.push([lon, lat])
       }
       var clen = varint.decode(buf, offset)
       offset+=varint.decode.bytes
-      var cells = []
-      for (var i=0; i<clen; i++) {
-        var c0 = varint.decode(buf, offset)
-        data.areaEdge.cells[offsets.areaEdge.cells++] = c0 + pindex
-        cells.push(c0)
-        offset+=varint.decode.bytes
-        var c1 = varint.decode(buf, offset)
-        data.areaEdge.cells[offsets.areaEdge.cells++] = c1 + pindex
-        cells.push(c1)
-        offset+=varint.decode.bytes
-        var c2 = varint.decode(buf, offset)
-        data.areaEdge.cells[offsets.areaEdge.cells++] = c2 + pindex
-        cells.push(c2)
+      for (var i=0; i<clen*3; i++) {
+        var c = varint.decode(buf, offset)
+        data.area.cells[offsets.area.cells++] = c + pindex
         offset+=varint.decode.bytes
       }
-      var edges = []
+      var elen = varint.decode(buf, offset)
+      offset+=varint.decode.bytes
       for (var i=0; i<elen; i++) {
         var e0 = varint.decode(buf, offset)
-        data.areaEdge.edges[offsets.areaEdge.edges++] = e0 + pindex
-        edges.push(c0)
         offset+=varint.decode.bytes
         var e1 = varint.decode(buf, offset)
-        data.areaEdge.edges[offsets.areaEdge.edges++] = e1 + pindex
-        edges.push(c1)
         offset+=varint.decode.bytes
+        //data.areaBorder.edges[offsets.area.edges++] = e0 + pindex
+        //data.areaBorder.edges[offsets.area.edges++] = e1 + pindex
       }
+      pindex+=plen
+      offset = decodeLabels(buf, offset, data.area, id)
     }
   })
   return data
