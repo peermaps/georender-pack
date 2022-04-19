@@ -9,7 +9,8 @@ module.exports = function (buffers) {
     area: { types: 0, ids: 0, positions: 0, cells: 0 },
     areaBorder: { types: 0, ids: 0, positions: 0, normals: 0 },
   }
-  buffers.forEach(function (buf) {
+  for (var bufi = 0; bufi < buffers.length; bufi++) {
+    var buf = buffers[bufi]
     if (buf.length === 0) return
     var featureType = buf.readUInt8(0)
     var offset = 1
@@ -86,7 +87,7 @@ module.exports = function (buffers) {
       sizes.areaBorder.positions+=esize*2
       sizes.areaBorder.normals+=esize*2
     }
-  })
+  }
   var data = {
     point: {
       types: new Float32Array(sizes.point.types),
@@ -122,7 +123,8 @@ module.exports = function (buffers) {
     areaBorder: { types: 0, ids: 0, positions: 0, normals: 0 },
   }
   var pindex = 0
-  buffers.forEach(function (buf) {
+  for (var bufi = 0; bufi < buffers.length; bufi++) {
+    var buf = buffers[bufi]
     if (buf.length === 0) return
     var offset = 0
     var featureType = buf.readUInt8(offset)
@@ -361,7 +363,7 @@ module.exports = function (buffers) {
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
     }
-  })
+  }
   return data
 }
 
