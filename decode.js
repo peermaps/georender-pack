@@ -341,7 +341,7 @@ module.exports = function (buffers) {
         if (e === 0) { // edge break
           addAreaBorderPositions(data, offsets, positions, id, type)
           positions = []
-        } else if (e0 % 2 === 0) { // edge index
+        } else if (e % 2 === 0) { // edge index
           var ei = Math.floor(e/2)-1
           positions.push([
             data.area.positions[pstart+ei*2+0],
@@ -357,6 +357,7 @@ module.exports = function (buffers) {
               data.area.positions[pstart+ex*2+1]
             ])
           }
+          eprev = e1
         }
       }
       addAreaBorderPositions(data, offsets, positions, id, type)
@@ -382,7 +383,7 @@ function decodeLabels (buf, offset, data, id) {
 
 function addAreaBorderPositions(data, offsets, positions, id, type) {
   if (positions.length === 0) return
-  var normals = getNormals(positions, true)
+  var normals = getNormals(positions, false)
   var scale = Math.sqrt(normals[0][1])
   data.areaBorder.ids[offsets.areaBorder.ids++] = id
   data.areaBorder.types[offsets.areaBorder.types++] = type
