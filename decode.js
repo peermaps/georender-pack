@@ -382,7 +382,7 @@ function decodeLabels (buf, offset, data, id) {
 }
 
 function addAreaBorderPositions(data, offsets, positions, id, type) {
-  if (positions.length === 0) return
+  if (positions.length < 2) return
   var normals = getNormals(positions, false)
   var scale = Math.sqrt(normals[0][1])
   data.areaBorder.ids[offsets.areaBorder.ids++] = id
