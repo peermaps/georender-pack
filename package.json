@@ -1,6 +1,6 @@
 {
   "name": "georender-pack",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "pack and unpack osm data based on the peermaps buffer schema",
   "main": "index.js",
   "directories": {
