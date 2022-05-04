@@ -64,23 +64,32 @@ module.exports = function (buffers) {
       var clen = varint.decode(buf, offset) //clen
       offset+=varint.decode.bytes
       sizes.area.cells+=clen*3
+      for (var i=0; i<clen*3; i++) {
+        var c = varint.decode(buf, offset)
+        offset+=varint.decode.bytes
+      }
       var elen = varint.decode(buf, offset) //elen
       offset+=varint.decode.bytes
-      var esize = 2, eprev = 0
+      var epl = 0, esize = 0, eprev = 0
       for (var i=0; i<elen; i++) {
         var e = varint.decode(buf, offset)
         offset+=varint.decode.bytes
         if (e === 0) { // edge break
-          eprev = 0
-          esize+=2
+          if (epl >= 2) {
+            esize += epl*2 + 2
+          }
+          epl = 0
         } else if (e % 2 === 0) { // edge index
-          eprev = Math.floor(e/2)-1
-          esize+=2
+          var ei = Math.floor(e/2)-1
+          epl++
+          eprev = ei
         } else { // edge range
-          var e1 = Math.floor(e/2)-1
-          esize+=(e1-eprev)*2
+          epl += Math.floor(e/2)-eprev-1
           eprev = e1
         }
+      }
+      if (epl >= 2) {
+        esize += epl*2 + 2
       }
       sizes.areaBorder.types+=esize
       sizes.areaBorder.ids+=esize
@@ -319,11 +328,11 @@ module.exports = function (buffers) {
         lon = buf.readFloatLE(offset)
         offset+=4
         lat = buf.readFloatLE(offset)
+        offset+=4
         data.area.types[offsets.area.types++] = type
         data.area.ids[offsets.area.ids++] = id
         data.area.positions[offsets.area.positions++] = lon
         data.area.positions[offsets.area.positions++] = lat
-        offset+=4
       }
       var clen = varint.decode(buf, offset)
       offset+=varint.decode.bytes
