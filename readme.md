@@ -1,10 +1,11 @@
 # georender-pack
 
-pack osm data into a buffer based on the [peermaps buffer
-schema](https://github.com/peermaps/docs/blob/master/bufferschema.md). also includes
-code to unpack buffers in the above schema.
+pack osm data into a buffer based on the [georender schema][].
+also includes code to unpack buffers in the above schema.
 
 this is part of the [peermaps](https://github.com/peermaps/) pipeline.
+
+[georender schema]: https://github.com/peermaps/docs/blob/master/georender.md
 
 # example
 
@@ -101,13 +102,11 @@ second, optional argument for any dependencies for the first argument (for
 example, if the first argument is a way, the second argument should contain data
 for all the points that make up the way).
 
-output is a single buffer based on the [peermaps buffer
-schema](https://github.com/peermaps/docs/blob/master/bufferschema.md).
+output is a single buffer based on the [georender schema][].
 
 ## decode(buffers)
 
-input is an array of buffers based on the [peermaps buffer
-schema](https://github.com/peermaps/docs/blob/master/bufferschema.md).
+input is an array of buffers based on the [georender schema][].
 
 output is an object containing buffer data in this structure:
 
