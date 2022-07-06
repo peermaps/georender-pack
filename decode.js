@@ -248,68 +248,7 @@ module.exports = function (buffers) {
           var pos = positions.slice(start, j+1)
           if (pos.length === 0) continue
           start = j+1
-          var normals = getNormals(pos, true)
-          var positionsCount = 2+6+(4*pos.length)
-
-          if (offsets.areaBorder.positions + pos.length + positionsCount >= data.areaBorder.positions.length) {
-            var ndataTypes = new Float32Array(data.areaBorder.types.length*1.2)
-            for (var k=0; k<data.areaBorder.types.length; k++) {
-              ndataTypes[k] = data.areaBorder.types[k]
-            }
-            data.areaBorder.types = ndataTypes
-            var ndataPos = new Float32Array(data.areaBorder.positions.length*1.2)
-            for (var k=0; k<data.areaBorder.positions.length; k++) {
-              ndataPos[k] = data.areaBorder.positions[k]
-            }
-            data.areaBorder.positions = ndataPos
-            var ndataNorms = new Float32Array(data.areaBorder.normals.length*1.2)
-            for (var k=0; k<data.areaBorder.normals.length; k++) {
-              ndataNorms[k] = data.areaBorder.normals[k]
-            }
-            data.areaBorder.normals = ndataNorms
-          }
-
-          for (var k=0; k<pos.length; k++){
-            var scale = Math.sqrt(normals[k][1])
-            if (k === 0) {
-              data.areaBorder.types[offsets.areaBorder.types++] = type
-              data.areaBorder.ids[offsets.areaBorder.ids++] = id
-              data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
-              data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
-              data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][0]*scale
-              data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][1]*scale
-            }
-            data.areaBorder.types[offsets.areaBorder.types++] = type
-            data.areaBorder.types[offsets.areaBorder.types++] = type
-            data.areaBorder.ids[offsets.areaBorder.ids++] = id
-            data.areaBorder.ids[offsets.areaBorder.ids++] = id
-            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0]
-            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][1]
-            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][0]
-            data.areaBorder.positions[offsets.areaBorder.positions++] = pos[k][1]
-            data.areaBorder.normals[offsets.areaBorder.normals++] = normals[k][0][0]*scale
-            data.areaBorder.normals[offsets.areaBorder.normals++] = normals[k][0][1]*scale
-            data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[k][0][0]*scale
-            data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[k][0][1]*scale
-          }
-          data.areaBorder.types[offsets.areaBorder.types++] = type
-          data.areaBorder.types[offsets.areaBorder.types++] = type
-          data.areaBorder.types[offsets.areaBorder.types++] = type
-          data.areaBorder.ids[offsets.areaBorder.ids++] = id
-          data.areaBorder.ids[offsets.areaBorder.ids++] = id
-          data.areaBorder.ids[offsets.areaBorder.ids++] = id
-          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
-          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
-          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
-          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
-          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][0]
-          data.areaBorder.positions[offsets.areaBorder.positions++] = pos[0][1]
-          data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][0]*scale
-          data.areaBorder.normals[offsets.areaBorder.normals++] = normals[0][0][1]*scale
-          data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[0][0][0]*scale
-          data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[0][0][1]*scale
-          data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[0][0][0]*scale
-          data.areaBorder.normals[offsets.areaBorder.normals++] = -normals[0][0][1]*scale
+          addAreaBorderPositions(data, offsets, pos, id, type)
         }
       }
       pindex+=plen
@@ -392,6 +331,25 @@ function decodeLabels (buf, offset, data, id) {
 
 function addAreaBorderPositions(data, offsets, positions, id, type) {
   if (positions.length < 2) return
+  var positionsCount = 2+6+(4*positions.length)
+  var ex = 1.5
+  if (offsets.areaBorder.positions + positions.length + positionsCount >= data.areaBorder.positions.length) {
+    var ndataTypes = new Float32Array(data.areaBorder.types.length*ex)
+    for (var k=0; k<data.areaBorder.types.length; k++) {
+      ndataTypes[k] = data.areaBorder.types[k]
+    }
+    data.areaBorder.types = ndataTypes
+    var ndataPos = new Float32Array(data.areaBorder.positions.length*ex)
+    for (var k=0; k<data.areaBorder.positions.length; k++) {
+      ndataPos[k] = data.areaBorder.positions[k]
+    }
+    data.areaBorder.positions = ndataPos
+    var ndataNorms = new Float32Array(data.areaBorder.normals.length*ex)
+    for (var k=0; k<data.areaBorder.normals.length; k++) {
+      ndataNorms[k] = data.areaBorder.normals[k]
+    }
+    data.areaBorder.normals = ndataNorms
+  }
   var normals = getNormals(positions, false)
   var scale = Math.sqrt(normals[0][1])
   data.areaBorder.ids[offsets.areaBorder.ids++] = id
