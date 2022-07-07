@@ -1,6 +1,6 @@
 var getNormals = require('polyline-normals')
 var varint = require('varint')
-var makeEdgeGraph = require('./lib/makeEdgeGraph.js')
+var getLoops = require('./lib/get-loops.js')
 
 module.exports = function (buffers) {
   var sizes = {
@@ -26,10 +26,10 @@ module.exports = function (buffers) {
       offset+=varint.decode.bytes
       var plen = varint.decode(buf, offset) //pcount
       offset+=varint.decode.bytes
-      sizes.line.types+=plen*2+2
-      sizes.line.ids+=plen*2+2
-      sizes.line.positions+=plen*4+4
-      sizes.line.normals+=plen*4+4
+      sizes.line.types+=plen*2+3
+      sizes.line.ids+=plen*2+3
+      sizes.line.positions+=plen*4+6
+      sizes.line.normals+=plen*4+6
     }
     else if (featureType === 3) {
       varint.decode(buf, offset) //types
@@ -238,18 +238,9 @@ module.exports = function (buffers) {
         cells.push(c2)
         offset+=varint.decode.bytes
       }
-      var edgeGraph = makeEdgeGraph(cells)
-      var start = 0
-      for (var j=0; j<positions.length; j++) {
-        var a = j
-        var b = (j+1)%positions.length
-        var ab = a + ',' + b
-        if ((ab !== '0,1' && edgeGraph[ab] !==1) || j === positions.length-1) {
-          var pos = positions.slice(start, j+1)
-          if (pos.length === 0) continue
-          start = j+1
-          addAreaBorderPositions(data, offsets, pos, id, type)
-        }
+      var loops = getLoops(cells, positions)
+      for (var i=0; i <loops.length; i++) {
+        addAreaBorderPositions(data, offsets, loops[i], id, type, false)
       }
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
@@ -287,7 +278,7 @@ module.exports = function (buffers) {
         var e = varint.decode(buf, offset)
         offset+=varint.decode.bytes
         if (e === 0) { // edge break
-          addAreaBorderPositions(data, offsets, positions, id, type)
+          addAreaBorderPositions(data, offsets, positions, id, type, false)
           positions = []
         } else if (e % 2 === 0) { // edge index
           var ei = Math.floor(e/2)-1
@@ -308,10 +299,15 @@ module.exports = function (buffers) {
           eprev = e1
         }
       }
-      addAreaBorderPositions(data, offsets, positions, id, type)
+      addAreaBorderPositions(data, offsets, positions, id, type, false)
       pindex+=plen
       offset = decodeLabels(buf, offset, data.area, id)
     }
+  }
+  if (offsets.areaBorder.types !== data.areaBorder.types.length) {
+    data.areaBorder.types = data.areaBorder.types.subarray(0, offsets.areaBorder.types)
+    data.areaBorder.positions = data.areaBorder.positions.subarray(0, offsets.areaBorder.positions)
+    data.areaBorder.normals = data.areaBorder.normals.subarray(0, offsets.areaBorder.normals)
   }
   return data
 }
@@ -329,7 +325,7 @@ function decodeLabels (buf, offset, data, id) {
   return offset
 }
 
-function addAreaBorderPositions(data, offsets, positions, id, type) {
+function addAreaBorderPositions(data, offsets, positions, id, type, closed) {
   if (positions.length < 2) return
   var positionsCount = 2+6+(4*positions.length)
   var ex = 1.5
@@ -350,7 +346,7 @@ function addAreaBorderPositions(data, offsets, positions, id, type) {
     }
     data.areaBorder.normals = ndataNorms
   }
-  var normals = getNormals(positions, false)
+  var normals = getNormals(positions, closed)
   var scale = Math.sqrt(normals[0][1])
   data.areaBorder.ids[offsets.areaBorder.ids++] = id
   data.areaBorder.types[offsets.areaBorder.types++] = type
