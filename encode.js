@@ -189,6 +189,7 @@ module.exports = function (item, deps) {
             ppositions = []
             holes = []
             ref0 = -1
+            closed = false
           }
           if (!deps[smembers[i].id]) continue
           var member = deps[smembers[i].id]
